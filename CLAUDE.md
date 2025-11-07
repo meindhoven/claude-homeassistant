@@ -114,6 +114,217 @@ For Home Assistant dashboard/Lovelace configurations:
 4. **Iterate 2-3 times** for quality improvements
 5. **Commit** final version
 
+#### 4. Multi-File Workflows
+
+Many Home Assistant features require coordinated changes across multiple files. Handle these systematically:
+
+**Common Multi-File Patterns:**
+
+**Pattern 1: Automation with Helper Entities**
+```
+Request: "Create automation with adjustable brightness"
+
+Files to modify:
+1. config/configuration.yaml - Define input_number helper
+2. config/automations.yaml - Reference helper in automation
+
+Workflow:
+→ Read both files to understand current structure
+→ Add helper entity definition first
+→ Create automation referencing the helper
+→ Validate both files
+→ Test that helper appears in UI
+→ Commit both changes together
+```
+
+**Pattern 2: Automation with Reusable Script**
+```
+Request: "Secure home when leaving (multiple actions)"
+
+Files to modify:
+1. config/scripts.yaml - Create reusable script
+2. config/automations.yaml - Call script from automation
+
+Benefits:
+→ Script can be reused by multiple automations
+→ Script can be triggered manually from UI
+→ Easier to test and maintain
+→ Changes to script affect all automations using it
+```
+
+**Pattern 3: Complex Scene with Automation**
+```
+Request: "Movie mode that dims lights and adjusts thermostat"
+
+Files to modify:
+1. config/scenes.yaml - Define scene with all entity states
+2. config/automations.yaml - Automation to activate scene
+3. config/automations.yaml - Automation to restore previous state
+
+Workflow:
+→ Create scene with desired states
+→ Create activation automation
+→ Create restoration automation
+→ Validate scene activates correctly
+→ Test that restoration works
+```
+
+**Pattern 4: Integration Configuration**
+```
+Request: "Add weather integration"
+
+Files to modify:
+1. config/configuration.yaml - Add integration config
+2. config/secrets.yaml - Store API key
+3. config/automations.yaml - Create weather-based automation
+
+Security:
+→ NEVER commit secrets.yaml
+→ Use !secret tag in configuration.yaml
+→ Validate without exposing secrets
+```
+
+**Best Practices for Multi-File Changes:**
+
+1. **Plan the Dependency Graph**
+   ```
+   Before editing, identify:
+   - Which files need changes?
+   - What's the dependency order?
+   - Which entities reference which?
+   - What could break if one fails?
+   ```
+
+2. **Edit in Dependency Order**
+   ```
+   Good order:
+   1. Base configs (configuration.yaml)
+   2. Shared resources (scripts.yaml, scenes.yaml)
+   3. Consumers (automations.yaml)
+
+   Why: Ensures references exist before they're used
+   ```
+
+3. **Validate Incrementally**
+   ```
+   After each file edit:
+   → Run validation
+   → Check for new errors
+   → Fix before moving to next file
+
+   Result: Isolate errors to specific changes
+   ```
+
+4. **Use Slash Commands for Multi-File Workflows**
+   ```
+   /create-automation - Automatically handles multi-file needs
+   /review-automation - Checks cross-file dependencies
+   /safe-deploy - Validates all related files together
+   ```
+
+5. **Document Cross-File Dependencies**
+   ```
+   In commit messages:
+   "Add brightness automation with helper input
+
+   - configuration.yaml: Added input_number helper
+   - automations.yaml: Added automation using helper
+
+   These files must be deployed together."
+   ```
+
+**Common Multi-File Pitfalls:**
+
+❌ **Editing files in wrong order**
+```
+Bad: Create automation first, add helper second
+Result: Validation fails, automation references non-existent entity
+Good: Add helper first, then create automation
+```
+
+❌ **Forgetting to validate all changed files**
+```
+Bad: Validate only automations.yaml
+Result: Syntax error in configuration.yaml breaks HA restart
+Good: Run full validation suite (all files)
+```
+
+❌ **Partial commits**
+```
+Bad: Commit automation without helper
+Result: Broken automation in git history
+Good: Commit all related changes together
+```
+
+❌ **Assuming entities exist**
+```
+Bad: Reference script.secure_home without checking
+Result: Automation fails silently at runtime
+Good: Read scripts.yaml first to verify it exists
+```
+
+**Multi-File Workflow Example:**
+
+```
+User: "Create automation to adjust thermostat based on occupancy
+       with configurable temperature settings"
+
+Claude's approach:
+1. PLAN multi-file changes:
+   - configuration.yaml: input_number for temperatures
+   - automations.yaml: occupancy-based automation
+
+2. READ existing files:
+   - Check configuration.yaml structure
+   - Check current automations
+   - Find occupancy sensors
+
+3. EDIT in order:
+   a. configuration.yaml - Add helpers:
+      - input_number.occupied_temp
+      - input_number.unoccupied_temp
+   b. automations.yaml - Add automation referencing helpers
+
+4. VALIDATE after each edit:
+   - After helpers: Check YAML syntax
+   - After automation: Check entity references
+
+5. TEST logic:
+   - Verify helpers appear in UI
+   - Check automation triggers correctly
+   - Confirm template renders properly
+
+6. COMMIT together:
+   "Add occupancy-based thermostat automation
+
+   - configuration.yaml: Temperature input helpers
+   - automations.yaml: Occupancy automation
+
+   Helpers allow UI adjustment without editing YAML."
+```
+
+**When to Use Multi-File Patterns:**
+
+✅ **Use scripts** when:
+- Same actions used by multiple automations
+- Actions are complex and benefit from abstraction
+- You want manual triggering capability
+
+✅ **Use helpers** when:
+- Values need UI adjustment
+- Settings should persist across restarts
+- Multiple automations share configuration
+
+✅ **Use scenes** when:
+- Setting multiple entity states together
+- Wanting quick state restoration
+- Creating mood/mode presets
+
+✅ **Use groups** when:
+- Controlling multiple entities as one
+- Simplifying automation targets
+- Creating logical entity collections
+
 ### Instruction Specificity
 
 **Vague instructions lead to suboptimal results.** Be specific about requirements, constraints, and edge cases.
