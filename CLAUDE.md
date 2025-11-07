@@ -22,6 +22,192 @@ Use these slash commands for common workflows:
 
 Simply type the slash command (e.g., `/validate-config`) to start the workflow.
 
+## Best Practices for Working with Claude Code
+
+### Recommended Workflow Patterns
+
+#### 1. Explore → Plan → Code → Commit
+
+The most effective workflow for feature development:
+
+1. **Explore**: Research the codebase first
+   - Use `/explore-entities` to discover available devices
+   - Read relevant configuration files
+   - Check existing automations for patterns
+   - Search for similar implementations
+
+2. **Plan**: Create a detailed plan before coding
+   - Use extended thinking modes ("think hard" for complex tasks)
+   - Break down into smaller, manageable steps
+   - Identify potential issues early
+   - Document assumptions and decisions
+
+3. **Code**: Implement systematically
+   - Follow one step at a time
+   - Use validation hooks to catch errors immediately
+   - Test incrementally rather than all at once
+   - Follow naming conventions and best practices
+
+4. **Commit**: Save work with context
+   - Write clear, descriptive commit messages
+   - Explain the "why" not just the "what"
+   - Commit logical units of work
+   - Push to remote when ready
+
+**Example:**
+```
+User: "Add automation to turn off all lights when I leave"
+
+1. EXPLORE:
+   /entity-search             # Find person/device_tracker entities
+   /entity-search             # Find all light entities
+   Read config/automations.yaml  # Check existing patterns
+
+2. PLAN:
+   - Trigger: person.home changes to "away"
+   - Condition: None (always run when leaving)
+   - Action: Turn off all lights by area
+   - Consider: What if multiple people? Need to check all person states
+
+3. CODE:
+   /create-automation         # Use guided workflow
+   /validate-config          # Ensure it's correct
+
+4. COMMIT:
+   git add + commit with clear message about the automation's purpose
+```
+
+#### 2. Test-Driven Development (TDD)
+
+For validation tools and Python scripts:
+
+1. **Write tests first** based on expected inputs/outputs
+   ```bash
+   # Example: Adding new validator feature
+   1. Write test cases in tests/test_new_validator.py
+   2. Run pytest - verify tests fail (red)
+   3. Commit failing tests
+   4. Implement feature
+   5. Run pytest iteratively until passing (green)
+   6. Refactor if needed
+   7. Commit working implementation
+   ```
+
+2. **Verify tests fail first**: Ensures tests are actually testing something
+3. **Commit tests separately**: Makes review easier
+4. **Iterate until green**: Small incremental changes
+5. **Use subagents for verification**: Get objective review of implementation
+
+**Benefits:**
+- Catches edge cases early
+- Documents expected behavior
+- Prevents regression
+- Makes refactoring safer
+
+#### 3. Visual Iteration (for dashboards/UI)
+
+For Home Assistant dashboard/Lovelace configurations:
+
+1. **Provide design mock** or describe desired layout
+2. **Implement UI code** in Lovelace YAML
+3. **Take screenshot** of result (if possible)
+4. **Iterate 2-3 times** for quality improvements
+5. **Commit** final version
+
+### Instruction Specificity
+
+**Vague instructions lead to suboptimal results.** Be specific about requirements, constraints, and edge cases.
+
+#### ❌ Vague Instructions (Avoid)
+
+```
+"Add tests for the validator"
+"Fix the automation"
+"Make it better"
+"Update the script"
+```
+
+#### ✅ Specific Instructions (Use These)
+
+```
+"Write pytest tests for reference_validator.py covering:
+ - Valid entity references (should pass)
+ - Missing entities (should error with entity_id in message)
+ - Disabled entities (should warn, not error)
+ - Jinja2 template extraction (test {{ states.light.kitchen }} pattern)
+ - Avoid mocking the entity registry - use test fixtures"
+
+"Fix the 'lights off at midnight' automation to:
+ - Only run on weekdays (Mon-Fri)
+ - Exclude bedroom lights (people might be reading)
+ - Add a 30-second delay between turning off each room
+ - Send notification when complete"
+
+"Optimize the entity_explorer.py script:
+ - Add caching for entity registry (currently reads on every search)
+ - Implement fuzzy matching for entity names
+ - Sort results by relevance score, not alphabetically
+ - Target: Search should complete in <100ms for 500+ entities"
+```
+
+**Guidelines:**
+- Specify **edge cases** to handle
+- Define **success criteria** clearly
+- Mention **constraints** (performance, compatibility, style)
+- State what to **avoid** (mocking, certain patterns, etc.)
+- Provide **examples** when helpful
+
+### Context Management
+
+Long sessions can accumulate irrelevant context. Manage it actively:
+
+#### When to Use `/clear`
+
+- ✅ After completing a major feature
+- ✅ When switching to unrelated task
+- ✅ If responses become unfocused or repetitive
+- ✅ Before starting a new automation project
+- ✅ After resolving a complex debugging session
+
+#### Keeping Context Focused
+
+1. **Use GitHub Issues**: For multi-step projects, track in issues rather than long conversations
+2. **Use TODO lists**: Break complex tasks into trackable items
+3. **Session planning**: Start sessions with clear goals
+4. **Regular commits**: Commit frequently to externalize progress
+
+#### Example Context Management
+
+```
+# Good session flow:
+/create-automation → work on automation → /validate-config → commit → /clear
+/create-automation → work on new automation → /validate-config → commit → /clear
+
+# Instead of:
+/create-automation → automation 1 → automation 2 → automation 3 → troubleshoot
+→ fix issues → add features → debug more → ... (long unfocused session)
+```
+
+### Multi-Claude Workflows (Advanced)
+
+For complex projects, consider running multiple Claude instances:
+
+1. **Parallel Development**:
+   - Instance 1: Writes automation
+   - Instance 2: Reviews code quality
+   - Use git worktrees for independent work
+
+2. **Test Verification**:
+   - Instance 1: Implements feature
+   - Instance 2: Verifies implementation isn't overfitting to tests
+
+3. **Simultaneous Tasks**:
+   - Instance 1: Working on automations
+   - Instance 2: Updating documentation
+   - Instance 3: Refactoring validators
+
+**Setup**: Use separate terminal windows or tmux panes, each with its own Claude Code session.
+
 ## Project Structure
 
 - `config/` - Contains all Home Assistant configuration files (synced from HA instance)
@@ -178,8 +364,15 @@ vacuum.office_roborock
 - Vendor prefixes (aquanta_, august_, etc.) are replaced with descriptive device names
 
 ### **Claude Code Integration:**
-- When creating automations, always ask the user for input if there are multiple choices for sensors or devices
-- Use the entity explorer tools to discover available entities before writing automations
-- Follow the naming convention when suggesting entity names in automations
+- **Always explore first**: Use entity discovery tools before writing automations (see "Explore → Plan → Code → Commit" workflow above)
+- **Ask for clarification**: When multiple choices exist for sensors or devices, always ask the user
+- **Follow naming convention**: Use the `location_room_device_sensor` pattern when suggesting entity names
+- **Be specific**: Follow instruction specificity guidelines (see Best Practices section)
+- **Validate early**: Use hooks and validation commands frequently
+- **Manage context**: Use `/clear` between unrelated tasks (see Context Management above)
+
+## Important Technical Notes
 
 - All python tools need to be run with  `source venv/bin/activate && python <tool_path>`
+- Validation hooks run automatically but can be manually triggered with `/validate-config`
+- Use slash commands for common workflows - they include built-in validation and safety checks
