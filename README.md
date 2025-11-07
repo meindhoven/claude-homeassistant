@@ -23,6 +23,24 @@ Click to play
 - **Safe Deployments**: Pre-push validation blocks invalid configs
 - **Automated Hooks**: Validation runs automatically on file changes
 - **Entity Registry Integration**: Real-time validation against your actual HA setup
+### Claude Code Integration (Enhanced)
+- **⚡ Custom Slash Commands**: 10 workflow commands for common tasks (`/validate-config`, `/create-automation`, `/safe-deploy`)
+- **🤖 AI-Powered Automation Creation**: Write automations in plain English with guided entity discovery
+- **📚 Comprehensive Documentation**: Best practices, workflow patterns, and context-specific guides
+- **🔌 MCP Server Support**: Optional direct Home Assistant API integration for real-time queries
+- **📖 Multi-Level Documentation**: Context-specific CLAUDE.md files in tools/, config/, and hooks/
+
+### Validation & Safety
+- **🛡️ Multi-Layer Validation**: YAML syntax, entity references, and official HA validation
+- **🔄 Safe Deployments**: Pre-push validation blocks invalid configs from reaching HA
+- **⚡ Automated Hooks**: Validation runs automatically on file changes
+- **📊 Entity Registry Integration**: Real-time validation against your actual HA setup
+
+### Developer Experience
+- **🔍 Entity Discovery**: Advanced tools to explore and search available entities
+- **🎨 Code Quality**: Automated formatting and linting for Python validators
+- **📝 Workflow Patterns**: TDD, Explore→Plan→Code→Commit, and more
+- **🔧 Context Management**: Guidelines for efficient Claude Code sessions
 
 ## 🚀 Quick Start
 
@@ -423,17 +441,93 @@ The agent system provides a complete development workflow:
 ```
 
 **Plus:** Recommendations for improvements, edge case warnings, and comprehensive documentation
+This project implements [Anthropic's Claude Code best practices](https://www.anthropic.com/engineering/claude-code-best-practices) for optimal AI-assisted development.
+
+### Slash Commands (Quick Actions)
+
+Use natural language commands for common workflows:
+
+```bash
+/validate-config      # Run complete validation suite
+/create-automation    # Guided automation creation with entity discovery
+/explore-entities     # Interactive entity discovery and search
+/safe-deploy         # Validate, backup, and push to HA
+/pull-latest         # Sync latest config from Home Assistant
+/backup-config       # Create timestamped backup
+/fix-yaml            # Auto-fix YAML formatting issues
+/review-automation   # Analyze and improve existing automation
+/troubleshoot        # Diagnose configuration issues
+/entity-search       # Quick entity lookup with filters
+```
+
+Simply type a slash command in Claude Code chat to start the workflow.
+
+### Workflow Patterns
+
+**Explore → Plan → Code → Commit** (Recommended):
+1. **Explore**: Use `/entity-search` to discover available devices
+2. **Plan**: Break down into steps, identify edge cases
+3. **Code**: Implement with validation hooks catching errors
+4. **Commit**: Save with clear, descriptive messages
+
+**Test-Driven Development** (For validators):
+1. Write tests first based on expected behavior
+2. Verify tests fail (red)
+3. Implement feature iteratively
+4. Tests pass (green)
+5. Refactor and commit
+
+See `CLAUDE.md` for complete workflow documentation.
+
+### MCP Server Integration (Optional)
+
+Enable direct Home Assistant API access during Claude sessions:
+
+```json
+// .mcp.json (disabled by default)
+{
+  "mcpServers": {
+    "homeassistant-community": {
+      "command": "uvx",
+      "args": ["mcp-server-home-assistant", "-v"],
+      "env": {
+        "HOME_ASSISTANT_WEB_SOCKET_URL": "${HA_URL}/api/websocket",
+        "HOME_ASSISTANT_API_TOKEN": "${HA_TOKEN}"
+      },
+      "disabled": false  // Change to enable
+    }
+  }
+}
+```
+
+**Benefits**:
+- Query entity states in real-time
+- Call HA services directly for testing
+- Validate entities against live instance
+- Debug automations with current state
+
+See `CLAUDE.md` → "MCP Server Configuration" for setup instructions.
 
 ### Automated Validation Hooks
 
-Two hooks ensure configuration safety:
+Four hooks ensure code quality and configuration safety:
 
-1. **Post-Edit Hook**: Runs validation after editing YAML files
-2. **Pre-Push Hook**: Validates before syncing to HA (blocks if invalid)
+1. **Post-Edit HA Validation**: Runs after editing YAML files in `config/`
+2. **Post-Edit Python Quality**: Formats and lints Python code in `tools/`
+3. **YAML Formatter**: Auto-formats YAML files
+4. **Pre-Push Validation**: Blocks invalid configs from being pushed (critical!)
+
+### Context-Specific Documentation
+
+Claude automatically loads relevant documentation when working in specific directories:
+
+- **`tools/CLAUDE.md`** - Validator development guide (TDD, patterns, debugging)
+- **`config/CLAUDE.md`** - HA configuration best practices (syntax, patterns, examples)
+- **`.claude-code/hooks/CLAUDE.md`** - Hook development guide (patterns, testing)
 
 ### Entity Naming Convention
 
-This system supports standardized entity naming:
+Standardized naming for multi-location deployments:
 
 **Format: `location_room_device_sensor`**
 
@@ -445,6 +539,40 @@ climate.home_living_room_heatpump
 ```
 
 The agent system understands this convention and suggests entities accordingly.
+### Natural Language Automation Creation
+
+**Example workflow**:
+
+```
+User: "Turn off all lights at midnight on weekdays"
+
+Claude:
+1. Uses /entity-search to find light entities
+2. Asks for clarification on which lights
+3. Generates YAML automation:
+```
+
+```yaml
+- id: weekday_midnight_lights_off
+  alias: "Weekday Midnight Lights Off"
+  description: "Turn off all lights at midnight on weekdays"
+  mode: single
+  trigger:
+    - platform: time
+      at: "00:00:00"
+  condition:
+    - condition: time
+      weekday: [mon, tue, wed, thu, fri]
+  action:
+    - service: light.turn_off
+      target:
+        entity_id: all
+```
+
+```
+4. Validates configuration automatically
+5. Ready to deploy with /safe-deploy
+```
 
 ## 📊 Entity Discovery
 
@@ -542,10 +670,62 @@ Located in `.claude-code/settings.json`:
 
 Apache 2.0
 
+## 📖 Best Practices for Claude Code
+
+This project implements Anthropic's recommended best practices. See `CLAUDE.md` for comprehensive documentation.
+
+### Quick Tips
+
+**✅ DO:**
+- Use slash commands for common workflows (`/create-automation`, `/validate-config`)
+- Explore entities before writing automations (`/entity-search`)
+- Be specific in instructions (edge cases, success criteria, constraints)
+- Use `/clear` between unrelated tasks to manage context
+- Commit frequently with descriptive messages
+- Follow the Explore → Plan → Code → Commit pattern
+
+**❌ DON'T:**
+- Give vague instructions like "fix the automation" or "make it better"
+- Skip validation before deploying
+- Edit files without understanding the naming convention
+- Let Claude Code sessions become unfocused (use `/clear`)
+- Push configurations without testing
+
+### Workflow Examples
+
+**Creating an automation**:
+```
+1. /entity-search motion          # Find available motion sensors
+2. /entity-search light           # Find lights to control
+3. /create-automation             # Guided automation creation
+4. /validate-config               # Ensure correctness
+5. git add + commit               # Save work
+6. /safe-deploy                   # Deploy to HA safely
+```
+
+**Developing a new validator**:
+```
+1. Write tests first (TDD approach)
+2. Run pytest - verify tests fail
+3. Implement validator
+4. Iterate until tests pass
+5. Python quality hooks run automatically
+6. Commit with clear message
+```
+
+### Documentation Structure
+
+- **`README.md`** (this file) - Quick start and overview
+- **`CLAUDE.md`** - Complete Claude Code guide (workflows, MCP, best practices)
+- **`tools/CLAUDE.md`** - Validator development guide
+- **`config/CLAUDE.md`** - HA configuration reference
+- **`.claude-code/hooks/CLAUDE.md`** - Hook development guide
+
 ## 🙏 Acknowledgments
 
 - [Home Assistant](https://home-assistant.io) for the amazing platform
-- [Claude Code](https://claude.ai) for AI-powered development
+- [Claude Code](https://claude.ai) and [Anthropic](https://www.anthropic.com/) for AI-powered development
+- [Anthropic's Claude Code Best Practices](https://www.anthropic.com/engineering/claude-code-best-practices) for workflow guidance
 - The HA community for validation best practices
 
 ---
@@ -568,3 +748,12 @@ Apache 2.0
 ---
 
 **Ready to revolutionize your Home Assistant automation workflow?** Start by describing what you want in plain English and let the agent system handle the rest - from design to testing to documentation! 🚀🤖
+**Ready to revolutionize your Home Assistant automation workflow?**
+
+1. Clone this repository
+2. Configure your `.env` file
+3. Pull your HA config with `make pull`
+4. Type `/create-automation` in Claude Code
+5. Describe your automation in plain English
+
+Let Claude Code handle the rest! 🚀
