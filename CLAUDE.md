@@ -508,6 +508,186 @@ You can create project-specific MCP servers for:
   - `hooks/` - Validation hooks that run automatically
   - `settings.json` - Project configuration
 
+## Tool Configuration and Allowlist
+
+### Understanding Tool Permissions
+
+Claude Code uses various tools to interact with your codebase. This project has configured a **tool allowlist** that enables Claude to work efficiently without requiring manual approval for each operation.
+
+**Why Tool Allowlists Matter:**
+- ⚡ **Faster workflows**: Claude can read, edit, and validate files immediately
+- 🔒 **Safety through hooks**: Validation hooks catch errors regardless of tool permissions
+- 🎯 **Focused development**: No interruptions for routine operations
+- 📊 **Transparent operations**: All tool usage is logged and can be reviewed
+
+### Pre-Approved Tools
+
+These tools are configured in `.claude-code/settings.json` and don't require explicit approval:
+
+#### File Operations
+- **Read** - Read files to understand codebase
+- **Edit** - Modify existing files (always reads first)
+- **Write** - Create new files when necessary
+- **Glob** - Find files matching patterns
+- **Grep** - Search code for specific content
+
+#### Task Management
+- **Task** - Launch specialized agents for complex operations
+- **TodoWrite** - Track progress with TODO lists
+- **ExitPlanMode** - Complete planning phase
+
+#### Execution
+- **Bash** - Run terminal commands (git, make, validation tools)
+- **BashOutput** - Monitor output from background processes
+- **KillShell** - Stop background processes
+
+#### Research
+- **WebFetch** - Fetch documentation and resources
+- **WebSearch** - Search for solutions and information
+
+#### Specialized
+- **NotebookEdit** - Edit Jupyter notebooks
+- **Skill** - Execute project-specific skills
+
+### Project-Specific Tool Guidance
+
+Based on this project's needs, Claude follows these tool usage patterns:
+
+#### File Operations Best Practices
+```markdown
+✅ Always read files before editing
+✅ Use Edit for modifying existing files (preserves formatting)
+✅ Run validation after config changes
+✅ Prefer incremental changes over large rewrites
+
+❌ Don't use Write for existing files (use Edit instead)
+❌ Don't skip validation after YAML changes
+❌ Don't edit .storage/ files (read-only)
+```
+
+#### Execution Best Practices
+```markdown
+✅ Validate before every push (make validate)
+✅ Use hooks for automatic validation
+✅ Test automations incrementally
+✅ Run Python tools with venv activated
+
+❌ Don't push without validation passing
+❌ Don't bypass pre-push hooks
+❌ Don't run tools without activating venv
+```
+
+#### Research Best Practices
+```markdown
+✅ Use entity_explorer.py before creating automations
+✅ Verify entities exist in registry
+✅ Check Home Assistant docs when unsure
+✅ Search existing automations for patterns
+
+❌ Don't guess entity names
+❌ Don't assume services exist
+❌ Don't skip entity discovery phase
+```
+
+### Safety Through Hooks
+
+While tools are pre-approved, **validation hooks ensure safety**:
+
+1. **Post-Edit Validation** (`.claude-code/hooks/posttooluse-ha-validation.sh`)
+   - Runs after YAML edits in `config/`
+   - Validates syntax, entities, and HA config
+   - Non-blocking - warns but allows work to continue
+
+2. **Pre-Push Validation** (`.claude-code/hooks/pretooluse-ha-push-validation.sh`)
+   - Runs before `make push` or deployment
+   - **Blocking** - prevents invalid configs from reaching HA
+   - Ensures only validated configs are deployed
+
+3. **Python Quality Checks** (`.claude-code/hooks/posttooluse-python-quality.sh`)
+   - Runs after Python file edits
+   - Auto-formats with Black and isort
+   - Runs linting and type checking
+
+**Result**: Fast development + Safe deployments
+
+### Customizing Tool Configuration
+
+The tool configuration is in `.claude-code/settings.json`:
+
+```json
+{
+  "tools": {
+    "allowlist": {
+      "file_operations": ["Read", "Edit", "Write", "Glob", "Grep"],
+      "task_management": ["Task", "TodoWrite", "ExitPlanMode"],
+      "execution": ["Bash", "BashOutput", "KillShell"],
+      "research": ["WebFetch", "WebSearch"],
+      "notebook": ["NotebookEdit"],
+      "project_specific": ["Skill"]
+    },
+    "guidance": {
+      "file_operations": {
+        "always_read_before_edit": true,
+        "use_validation_after_changes": true,
+        "prefer_edit_over_write": true
+      },
+      "execution": {
+        "validate_before_push": true,
+        "use_hooks_for_safety": true,
+        "test_incrementally": true
+      },
+      "research": {
+        "use_entity_explorer_before_automations": true,
+        "verify_entity_existence": true,
+        "check_ha_docs_when_unsure": true
+      }
+    }
+  }
+}
+```
+
+**To modify**:
+1. Edit `.claude-code/settings.json`
+2. Add/remove tools from allowlist
+3. Update guidance flags as needed
+4. Changes take effect immediately
+
+### Personal Tool Preferences
+
+If you have personal tool preferences different from the team, use **CLAUDE.local.md**:
+
+```markdown
+# In your CLAUDE.local.md
+## Personal Tool Allowlist
+**Custom permissions:**
+- Always ask before running Bash commands that modify git history
+- Auto-approve all Read operations
+- Prefer verbose output for Bash commands
+```
+
+### Benefits of This Configuration
+
+**For This Project:**
+- ✅ Automatic validation after every edit
+- ✅ Blocked invalid pushes to Home Assistant
+- ✅ Fast iteration on automations
+- ✅ Safe experimentation with configs
+- ✅ Entity validation without manual checks
+
+**For Development Workflow:**
+- ✅ Claude can read docs and examples freely
+- ✅ Edits are validated immediately by hooks
+- ✅ Git operations require explicit confirmation (not in allowlist)
+- ✅ Dangerous operations (force push, rm -rf) are never auto-approved
+
+### Monitoring Tool Usage
+
+All tool usage is logged and visible in Claude Code's interface. Review logs to:
+- Understand what Claude did during a session
+- Debug issues with file edits or validation
+- Learn Claude's problem-solving approach
+- Verify no unintended changes were made
+
 ## Available Commands
 
 ### Configuration Management

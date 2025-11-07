@@ -15,6 +15,57 @@
     "description": "Management and validation of Home Assistant configuration files",
     "type": "home-automation"
   },
+  "tools": {
+    "_comment": "Tool allowlist - Claude can use these tools without explicit user approval",
+    "allowlist": {
+      "_comment": "These tools are pre-approved for automatic use",
+      "file_operations": [
+        "Read",
+        "Edit",
+        "Write",
+        "Glob",
+        "Grep"
+      ],
+      "task_management": [
+        "Task",
+        "TodoWrite",
+        "ExitPlanMode"
+      ],
+      "execution": [
+        "Bash",
+        "BashOutput",
+        "KillShell"
+      ],
+      "research": [
+        "WebFetch",
+        "WebSearch"
+      ],
+      "notebook": [
+        "NotebookEdit"
+      ],
+      "project_specific": [
+        "Skill"
+      ]
+    },
+    "guidance": {
+      "_comment": "Best practices for tool usage in this project",
+      "file_operations": {
+        "always_read_before_edit": true,
+        "use_validation_after_changes": true,
+        "prefer_edit_over_write": true
+      },
+      "execution": {
+        "validate_before_push": true,
+        "use_hooks_for_safety": true,
+        "test_incrementally": true
+      },
+      "research": {
+        "use_entity_explorer_before_automations": true,
+        "verify_entity_existence": true,
+        "check_ha_docs_when_unsure": true
+      }
+    }
+  },
   "validation": {
     "enabled": true,
     "auto_run": true,
