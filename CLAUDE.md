@@ -208,6 +208,110 @@ For complex projects, consider running multiple Claude instances:
 
 **Setup**: Use separate terminal windows or tmux panes, each with its own Claude Code session.
 
+## Personal Configuration (CLAUDE.local.md)
+
+### Customizing Claude's Behavior
+
+While this project provides comprehensive team-wide documentation via CLAUDE.md and subdirectory guides, **you can personalize Claude's behavior** for your own development style without affecting the shared configuration.
+
+**CLAUDE.local.md** is a personal configuration file that:
+- ✅ **Overrides team defaults** with your personal preferences
+- ✅ **Never committed to git** (in .gitignore)
+- ✅ **Automatically loaded** by Claude Code alongside shared CLAUDE.md
+- ✅ **Supports all markdown features** - sections, code blocks, lists, examples
+
+### Creating Your Personal Configuration
+
+**Quick Start:**
+```bash
+# Copy the template to create your personal config
+cp CLAUDE.local.md.template CLAUDE.local.md
+
+# Edit with your preferences
+# (Use your preferred editor)
+```
+
+The template includes sections for:
+- **Development Preferences**: Your typical workflow patterns
+- **Environment Setup**: Your Home Assistant URL, areas of focus, special entities
+- **Coding Style**: Python/YAML style preferences
+- **Communication**: How you prefer Claude to respond (detail level, explanations, emojis)
+- **Tool Usage**: Which tools you use frequently
+- **Personal Automations**: What you're currently working on
+- **MCP Preferences**: Whether you use MCP and how
+
+### Benefits
+
+**For Individual Developers:**
+- Claude remembers your coding style preferences
+- Adapts communication style to your preference (concise vs verbose)
+- Knows which entities and areas you typically work with
+- Understands your current projects for more relevant assistance
+- Respects your workflow preferences (e.g., "always ask before deploying")
+
+**For Teams:**
+- Each team member can have different preferences
+- Shared CLAUDE.md provides team standards
+- Personal CLAUDE.local.md customizes without conflicts
+- No merge conflicts from personal preferences
+
+### Example Use Cases
+
+**Scenario 1: Different Detail Preferences**
+```markdown
+# In your CLAUDE.local.md
+## Communication Preferences
+- Detail level: Concise
+- Explanations: Only when asked
+- Code comments: Minimal
+```
+
+**Scenario 2: Project-Specific Context**
+```markdown
+# In your CLAUDE.local.md
+## What I'm Currently Working On
+- Migrating all motion sensor automations to new Z-Wave sensors
+- Working primarily with: binary_sensor.home_*_motion entities
+- Areas: basement, garage, driveway
+- Always test motion automations manually before deploying
+```
+
+**Scenario 3: Personal Constraints**
+```markdown
+# In your CLAUDE.local.md
+## Personal Notes
+- Always confirm before deploying climate automations (expensive if wrong!)
+- I'm learning HA, so please explain Jinja2 templates when using them
+- Prefer entity_id over friendly names in automations
+```
+
+### Privacy and Security
+
+**Safe to include:**
+- Your specific entity names (e.g., `climate.office_bedroom_thermostat`)
+- Areas you work in
+- Personal workflow preferences
+- Current project context
+- Skill level and learning goals
+
+**Avoid including:**
+- Passwords or API tokens (use `.env` for those)
+- Personal identifying information
+- Detailed physical security layouts
+- Home address or location details
+
+**Note**: CLAUDE.local.md is in `.gitignore` and will never be committed, but it may still appear in local backups.
+
+### Template Reference
+
+See **CLAUDE.local.md.template** for a complete example with:
+- All available sections
+- Example configurations
+- Usage tips
+- Best practices
+
+**The template is comprehensive** - you don't need to fill out every section, just the ones relevant to your workflow.
+
 ## MCP Server Configuration
 
 ### What is MCP?

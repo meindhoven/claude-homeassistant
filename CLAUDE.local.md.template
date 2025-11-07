@@ -1,0 +1,223 @@
+# Personal Claude Code Configuration Template
+
+This is a **template** for personal Claude Code settings. Copy this file to `CLAUDE.local.md` in the project root to customize your own development preferences without affecting the team's shared configuration.
+
+```bash
+# To use this template:
+cp CLAUDE.local.md.template CLAUDE.local.md
+# Then edit CLAUDE.local.md with your personal preferences
+```
+
+**Note**: `CLAUDE.local.md` is in `.gitignore` and will never be committed to the repository.
+
+---
+
+## My Development Preferences
+
+### Preferred Workflow
+
+**My typical development session:**
+```
+1. [Describe your usual workflow]
+2. [What you typically work on]
+3. [Your preferred tools/commands]
+```
+
+### Personal Tool Allowlist
+
+**Tools I frequently use:**
+- [ ] Bash - [Always/Sometimes/Rarely]
+- [ ] Edit - [Always/Sometimes/Rarely]
+- [ ] Write - [Always/Sometimes/Rarely]
+- [ ] Grep - [Always/Sometimes/Rarely]
+- [ ] Read - [Always/Sometimes/Rarely]
+
+**Custom permissions:**
+```
+[Add any specific tool permissions or constraints you want Claude to know about]
+```
+
+### My Environment Setup
+
+**Home Assistant Instance:**
+- URL: [Your HA URL if different from team default]
+- Special entities I work with: [List any specific entities]
+- Areas I focus on: [bedroom, kitchen, etc.]
+
+**Development Machine:**
+- OS: [macOS/Linux/Windows]
+- Editor: [VS Code/Vim/etc.]
+- Terminal: [iTerm/Terminal/etc.]
+
+### Personal Automations
+
+**Automations I'm responsible for:**
+1. [Automation name] - [Brief description]
+2. [Automation name] - [Brief description]
+
+**Areas I work in:**
+- [ ] Lighting automations
+- [ ] Climate control
+- [ ] Security/monitoring
+- [ ] Media/entertainment
+- [ ] Other: [specify]
+
+### My Coding Style Preferences
+
+**Python:**
+```python
+# Example of style preferences
+- Prefer list comprehensions: [Yes/No]
+- Type hints: [Always/When complex/Rarely]
+- Docstring style: [Google/NumPy/reStructuredText]
+```
+
+**YAML:**
+```yaml
+# Home Assistant automation style preferences
+- Prefer inline lists: [Yes/No]
+- Quote all strings: [Yes/No/When needed]
+- Comment style: [Verbose/Minimal]
+```
+
+### Communication Preferences
+
+**How I prefer Claude to respond:**
+- Detail level: [Concise/Balanced/Verbose]
+- Explanations: [Always/When asked/Rarely]
+- Code comments: [Extensive/Balanced/Minimal]
+- Use emojis: [Yes/No]
+
+**Validation preferences:**
+- Run validation: [Always/Ask first/Only when requested]
+- Auto-format code: [Always/Ask first/Never]
+- Commit frequency: [After each change/At milestones/Let me decide]
+
+### Context Management
+
+**My session preferences:**
+- Typical session length: [30min/1hr/2hr+]
+- Prefer to use `/clear`: [Frequently/Occasionally/Rarely]
+- TODO list usage: [Always/Sometimes/Rarely]
+
+### Personal Notes
+
+**Things Claude should know about my workflow:**
+```
+[Add any specific preferences, quirks, or patterns you want Claude to follow]
+
+Examples:
+- "I prefer to review diffs before committing"
+- "Always ask before deploying to production"
+- "I like to test automations manually first"
+- "Prefer entity_id over friendly names in automations"
+```
+
+### Quick Reference
+
+**My most-used commands:**
+```bash
+# List your frequently used make commands, scripts, or shortcuts
+make pull
+make validate
+make push
+/entity-search
+/create-automation
+```
+
+**My keyboard shortcuts:**
+```
+[Add any editor shortcuts or aliases you use frequently]
+```
+
+### Project-Specific Context
+
+**What I'm currently working on:**
+```
+[Describe current projects, features, or areas of focus]
+[This helps Claude provide more relevant assistance]
+
+Example:
+- Migrating all motion sensor automations to use new sensors
+- Improving energy monitoring dashboard
+- Adding presence detection for multiple occupants
+```
+
+### Personal MCP Preferences
+
+**MCP Server Configuration:**
+- MCP enabled: [Yes/No]
+- Preferred MCP server: [Official/Community/None]
+- Use MCP for: [Entity queries/Service calls/Both/Neither]
+
+### Learning Preferences
+
+**Help me learn:**
+- Explain as you go: [Yes/No]
+- Suggest alternatives: [Always/Sometimes/Rarely]
+- Reference documentation: [Always/When asked/Rarely]
+- Show best practices: [Always/Sometimes/Rarely]
+
+---
+
+## Example Personal Configuration
+
+Below is an example of a filled-out personal configuration:
+
+```markdown
+## My Development Preferences
+
+### Preferred Workflow
+1. Pull latest config from HA
+2. Create/modify automation
+3. Validate locally
+4. Test with dry-run if possible
+5. Deploy and monitor logs
+
+### My Environment Setup
+
+**Home Assistant Instance:**
+- URL: http://homeassistant.local:8123
+- Special entities: climate.bedroom_ac, light.office_*
+- Areas: bedroom, office, living_room
+
+### Communication Preferences
+- Detail level: Balanced
+- Explanations: When making non-obvious changes
+- Code comments: For complex logic only
+- Use emojis: No
+
+### Personal Notes
+- Always confirm before deploying climate automations (expensive if wrong!)
+- I prefer to manually test motion sensor automations before deploying
+- Please explain Jinja2 templates when you use them
+- I'm learning HA, so references to documentation are helpful
+
+### What I'm currently working on
+- Setting up energy monitoring for entire house
+- Creating presence detection that works with multiple phones
+- Optimizing heating schedule based on occupancy patterns
+```
+
+---
+
+## Tips for Using CLAUDE.local.md
+
+1. **Keep it updated**: Revise as your preferences change
+2. **Be specific**: The more detail, the better Claude can assist
+3. **Include context**: Current projects help Claude provide relevant help
+4. **Note constraints**: Budget, device limitations, skill level, etc.
+5. **Add examples**: Show Claude examples of your preferred patterns
+
+## Privacy Note
+
+This file is **never committed** to git (it's in `.gitignore`), so you can:
+- Include specific entity names from your HA instance
+- Note security-sensitive automations
+- Add personal development notes
+- Reference local file paths specific to your machine
+
+However, still **avoid** including:
+- Passwords or API tokens (use `.env` for those)
+- Personal identifying information you wouldn't want in backups
+- Sensitive details about your physical security setup
