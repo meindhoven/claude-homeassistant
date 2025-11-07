@@ -7,12 +7,22 @@ Click to play
 
 ## 🌟 Features
 
-- **🤖 AI-Powered Automation Creation**: Use Claude Code to write automations in plain English
-- **🛡️ Multi-Layer Validation**: Comprehensive validation prevents broken configurations
-- **🔄 Safe Deployments**: Pre-push validation blocks invalid configs from reaching HA
-- **🔍 Entity Discovery**: Advanced tools to explore and search available entities
-- **⚡ Automated Hooks**: Validation runs automatically on file changes
-- **📊 Entity Registry Integration**: Real-time validation against your actual HA setup
+### 🤖 Multi-Agent Development System (NEW!)
+- **8 Specialized AI Agents**: Orchestrator + 7 specialized agents for complete automation lifecycle
+- **Natural Language Automation**: Describe what you want, get production-ready YAML
+- **Intelligent Entity Discovery**: Context-aware entity search with capability explanations
+- **Automated Testing**: Simulate scenarios before deployment to catch edge cases
+- **Auto-Documentation**: Generates markdown docs, entity maps, and changelogs
+- **Best Practices Enforcement**: Security, performance, and pattern analysis
+- **Intelligent Debugging**: Systematic diagnosis with specific fix suggestions
+- **Refactoring Analysis**: Detects duplicates, suggests optimizations
+
+### 🛡️ Core Safety Features
+- **Multi-Layer Validation**: YAML syntax, entity references, official HA validation
+- **Pre-Deployment Testing**: Test automations before pushing to HA
+- **Safe Deployments**: Pre-push validation blocks invalid configs
+- **Automated Hooks**: Validation runs automatically on file changes
+- **Entity Registry Integration**: Real-time validation against your actual HA setup
 
 ## 🚀 Quick Start
 
@@ -87,6 +97,167 @@ make push  # Uploads changes back to your HA instance (with validation)
 
 This gives you a complete development environment while only modifying your HA instance when completed.
 
+---
+
+## 🤖 Multi-Agent System
+
+This repository includes a comprehensive **8-agent system** that transforms Home Assistant automation development with intelligent, guided workflows.
+
+### The Agent Team
+
+**🎯 Orchestrator Agent** - Master coordinator managing all workflows and routing requests to specialized agents
+
+**🔍 Entity Discovery Agent** - Context-aware entity search with natural language understanding
+- Find entities by description: "motion sensors in the kitchen"
+- Get entity capabilities and usage information
+- Context-aware suggestions for triggers, conditions, and actions
+
+**🏗️ Automation Designer Agent** - Converts natural language to production-ready YAML
+- Describe automations in plain English
+- Automatically discovers required entities
+- Generates complete trigger/condition/action configurations
+
+**✅ Validation Agent** - 3-layer validation with intelligent error parsing
+- YAML syntax validation
+- Entity reference validation
+- Official Home Assistant validation
+- Explains errors and suggests specific fixes
+
+**🧪 Testing Agent** - Simulates automations before deployment
+- Tests multiple scenarios
+- Identifies edge cases
+- Dry-run capabilities prevent surprises
+
+**📚 Documentation Agent** - Auto-generates comprehensive documentation
+- Markdown files for each automation
+- Entity relationship maps
+- Maintains changelogs automatically
+
+**🎓 Best Practices Agent** - Enforces quality standards
+- Security review (exposed secrets, unsafe templates)
+- Performance analysis
+- Naming convention enforcement
+- Pattern recognition and anti-pattern detection
+
+**⚡ Refactoring Agent** - Optimizes existing automations
+- Detects duplicate logic
+- Suggests script extraction
+- Identifies consolidation opportunities
+
+### Using the Agent System
+
+#### Slash Commands (Easiest)
+
+```bash
+# Create a new automation with guided workflow
+/create-automation
+
+# Review all automations for issues and improvements
+/review-automations
+
+# Find entities for your automation
+/find-entities motion sensors in the kitchen
+
+# Debug a failing automation
+/debug-automation
+```
+
+#### Programmatic Usage
+
+```python
+from agents.orchestrator import OrchestratorAgent
+from agents.shared_context import SharedContext
+
+# Initialize the system
+context = SharedContext()
+orchestrator = OrchestratorAgent(context)
+
+# Create automation from natural language
+result = orchestrator.run(
+    workflow='create_automation',
+    description="Turn on kitchen lights when motion detected after sunset"
+)
+
+if result.success:
+    print(f"✅ {result.message}")
+    automation = result.data['automation']
+
+    # Review recommendations
+    for rec in result.recommendations:
+        print(f"[{rec['priority']}] {rec['description']}")
+```
+
+### Available Workflows
+
+- **create_automation** - Complete creation workflow with entity discovery, design, validation, testing, and documentation
+- **review_automations** - Comprehensive analysis of all automations with quality scoring and recommendations
+- **debug_automation** - Systematic debugging with entity availability checks and specific fix suggestions
+- **find_entities** - Natural language entity discovery with context-aware suggestions
+- **validate_config** - Multi-layer validation with intelligent error resolution
+- **document_automations** - Auto-generate markdown documentation and entity maps
+- **refactor_automations** - Find optimization opportunities and duplicate patterns
+
+### Example: Creating an Automation
+
+```
+User: /create-automation
+
+System: What would you like your automation to do?
+
+User: Turn on kitchen lights when motion is detected after sunset
+
+System: 🤖 Creating automation...
+
+Step 1: Finding entities...
+  ✓ Found: binary_sensor.home_kitchen_motion
+  ✓ Found: light.home_kitchen_ceiling
+  ✓ Found: sun.sun
+
+Step 2: Designing automation...
+  ✓ Trigger: Motion detected in kitchen
+  ✓ Condition: Sun below horizon
+  ✓ Action: Turn on kitchen ceiling light
+
+Step 3: Best practices review...
+  ⚠️ Recommendation: Add timeout to prevent lights staying on indefinitely
+
+Step 4: Validation...
+  ✓ YAML syntax valid
+  ✓ Entity references exist
+  ✓ Official HA validation passed
+
+Step 5: Testing scenarios...
+  ✓ Motion at 2 PM → No action (sun above horizon)
+  ✓ Motion at 9 PM → Lights turn on
+  ⚠️ No auto-off mechanism detected
+
+Step 6: Documentation generated...
+  ✓ Created: docs/automations/lighting/kitchen_motion_lights.md
+
+✅ Automation ready to deploy!
+
+Recommendations:
+  [high] Add timeout action to automatically turn off lights
+  [medium] Consider brightness adjustment based on time of night
+```
+
+### Agent System Benefits
+
+✅ **Faster Development** - Natural language to production automation in seconds
+✅ **Higher Quality** - Best practices enforced automatically
+✅ **Fewer Errors** - Multi-layer validation catches issues before deployment
+✅ **Better Documentation** - Auto-generated docs stay synchronized
+✅ **Easy Debugging** - Intelligent diagnosis with specific solutions
+✅ **Continuous Improvement** - Refactoring suggestions optimize over time
+
+### Documentation
+
+- **[Complete Agent System Guide](docs/AGENT_SYSTEM_GUIDE.md)** - Comprehensive user guide with examples and workflows
+- **[Project Instructions (CLAUDE.md)](CLAUDE.md)** - Detailed agent system documentation and API reference
+- **Slash Command Guides** - See `.claude-code/commands/` for detailed usage instructions
+
+---
+
 ## ⚙️ Prerequisites
 
 ### Make Command
@@ -109,27 +280,63 @@ xcode-select --install  # Installs Command Line Tools including make
 ## 📁 Project Structure
 
 ```
-├── config/                 # Home Assistant configuration files, downloaded from HA via script
+├── agents/                # Multi-agent system (NEW!)
+│   ├── base_agent.py     # Abstract base class for all agents
+│   ├── shared_context.py # Centralized state management
+│   ├── orchestrator.py   # Master coordinator
+│   ├── creation/         # Entity Discovery & Automation Designer
+│   ├── validation/       # Validation & Testing agents
+│   ├── analysis/         # Best Practices & Refactoring
+│   └── documentation/    # Documentation generation
+├── docs/                 # Generated documentation (NEW!)
+│   ├── AGENT_SYSTEM_GUIDE.md  # Complete agent system guide
+│   ├── automations/      # Per-automation documentation
+│   │   ├── lighting/
+│   │   ├── climate/
+│   │   └── security/
+│   └── entities/         # Entity relationship maps
+├── config/               # Home Assistant configuration files
 │   ├── configuration.yaml
 │   ├── automations.yaml
 │   ├── scripts.yaml
-│   └── .storage/          # Entity registry (pulled from HA)
-├── tools/                 # Validation scripts for Claude
-│   ├── run_tests.py       # Main test suite runner
+│   └── .storage/        # Entity registry (pulled from HA)
+├── tools/               # Validation scripts
+│   ├── run_tests.py     # Main test suite runner
 │   ├── yaml_validator.py  # YAML syntax validation
 │   ├── reference_validator.py # Entity reference validation
 │   ├── ha_official_validator.py # Official HA validation
 │   └── entity_explorer.py # Entity discovery tool
-├── .claude-code/          # Claude Code project settings
-│   ├── hooks/            # Automated validation hooks
-│   └── settings.json     # Project configuration
-├── .env.example          # Environment configuration template
-├── venv/                 # Python virtual environment
-├── Makefile              # Management commands
-└── CLAUDE.md             # Claude Code instructions
+├── .claude-code/        # Claude Code project settings
+│   ├── commands/        # Slash commands for agents (NEW!)
+│   │   ├── create-automation.md
+│   │   ├── review-automations.md
+│   │   ├── find-entities.md
+│   │   └── debug-automation.md
+│   ├── hooks/           # Automated validation hooks
+│   └── settings.json    # Project configuration
+├── tests/               # Agent system tests (NEW!)
+│   └── test_agent_system.py
+├── .env.example         # Environment configuration template
+├── venv/                # Python virtual environment
+├── Makefile             # Management commands
+└── CLAUDE.md            # Claude Code instructions + agent docs
 ```
 
 ## 🛠️ Available Commands
+
+### Agent System Commands (NEW!)
+```bash
+# Use natural language to work with automations
+/create-automation              # Create new automation with guided workflow
+/review-automations            # Comprehensive analysis of all automations
+/find-entities <query>         # Natural language entity search
+/debug-automation              # Debug failing automations
+
+# Example entity searches
+/find-entities motion sensors in the kitchen
+/find-entities climate controls at the office
+/find-entities all battery sensors
+```
 
 ### Configuration Management
 ```bash
@@ -178,6 +385,45 @@ The system provides three layers of validation:
 
 ## 🤖 Claude Code Integration
 
+### Multi-Agent Automation Development
+
+The agent system provides a complete development workflow:
+
+**Simple Usage - Slash Commands:**
+```bash
+/create-automation
+# Describe: "Turn off all lights at midnight on weekdays"
+# System: Creates, validates, tests, and documents the automation
+```
+
+**Complete Workflow Includes:**
+1. **Entity Discovery** - Finds all relevant lights automatically
+2. **Automation Design** - Generates production-ready YAML
+3. **Best Practices Review** - Checks security and performance
+4. **Validation** - 3-layer validation ensures correctness
+5. **Testing** - Simulates scenarios before deployment
+6. **Documentation** - Auto-generates markdown documentation
+
+**Result:**
+```yaml
+- id: weekday_midnight_lights_off
+  alias: "Weekday Midnight Lights Off"
+  description: "Turn off all lights at midnight on weekdays"
+  trigger:
+    - platform: time
+      at: "00:00:00"
+  condition:
+    - condition: time
+      weekday: [mon, tue, wed, thu, fri]
+  action:
+    - service: light.turn_off
+      target:
+        entity_id: all
+  mode: single
+```
+
+**Plus:** Recommendations for improvements, edge case warnings, and comprehensive documentation
+
 ### Automated Validation Hooks
 
 Two hooks ensure configuration safety:
@@ -198,33 +444,7 @@ media_player.office_kitchen_sonos
 climate.home_living_room_heatpump
 ```
 
-### Natural Language Automation Creation
-
-With Claude Code, you can:
-
-1. **Describe automations in English**:
-   ```
-   "Turn off all lights at midnight on weekdays"
-   ```
-
-2. **Claude writes the YAML**:
-   ```yaml
-   - id: weekday_midnight_lights_off
-     alias: "Weekday Midnight Lights Off"
-     trigger:
-       - platform: time
-         at: "00:00:00"
-     condition:
-       - condition: time
-         weekday: [mon, tue, wed, thu, fri]
-     action:
-       - service: light.turn_off
-         target:
-           entity_id: all
-   ```
-
-3. **Automatic validation ensures correctness**
-4. **Deploy safely with `make push`**
+The agent system understands this convention and suggests entities accordingly.
 
 ## 📊 Entity Discovery
 
@@ -330,4 +550,21 @@ Apache 2.0
 
 ---
 
-**Ready to revolutionize your Home Assistant automation workflow?** Start by describing what you want in plain English and let Claude Code handle the rest! 🚀
+## 🎯 Getting Started with Agents
+
+1. **Clone and Setup** - Follow the Quick Start instructions above
+2. **Pull Your Config** - Run `make pull` to sync your HA configuration
+3. **Try the Agent System** - Use `/create-automation` to create your first automation
+4. **Explore** - Use `/find-entities` to discover what's available
+5. **Review** - Run `/review-automations` to analyze your existing setup
+6. **Learn More** - Read the [Complete Agent System Guide](docs/AGENT_SYSTEM_GUIDE.md)
+
+## 📚 Additional Resources
+
+- **[Agent System Guide](docs/AGENT_SYSTEM_GUIDE.md)** - Comprehensive user guide with examples
+- **[CLAUDE.md](CLAUDE.md)** - Complete project instructions and agent documentation
+- **[Slash Command Guides](.claude-code/commands/)** - Detailed usage for each command
+
+---
+
+**Ready to revolutionize your Home Assistant automation workflow?** Start by describing what you want in plain English and let the agent system handle the rest - from design to testing to documentation! 🚀🤖
