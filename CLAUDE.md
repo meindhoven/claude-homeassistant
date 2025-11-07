@@ -161,3 +161,552 @@ vacuum.office_roborock
 - Follow the naming convention when suggesting entity names in automations
 
 - All python tools need to be run with  `source venv/bin/activate && python <tool_path>`
+
+---
+
+# 🤖 Multi-Agent Development System
+
+This repository now includes a **comprehensive multi-agent system** for intelligent Home Assistant automation development. The agent system provides guided workflows for creating, validating, testing, and documenting automations with confidence.
+
+## Agent System Overview
+
+The system consists of 8 specialized agents coordinated by an Orchestrator:
+
+### **1. Orchestrator Agent** (Master Coordinator)
+- Routes requests to appropriate specialists
+- Manages complex multi-agent workflows
+- Consolidates results from multiple agents
+- Handles error recovery and state management
+
+### **2. Entity Discovery Agent** (Explorer)
+- Context-aware entity search
+- Natural language entity discovery
+- Shows entity capabilities and usage
+- Suggests relevant entities for automation context
+
+### **3. Automation Designer Agent** (Architect)
+- Converts natural language to YAML
+- Builds triggers, conditions, and actions
+- Pattern recognition and templates
+- Generates complete automation configurations
+
+### **4. Validation Agent** (Quality Controller)
+- 3-layer validation (YAML, references, official HA)
+- Intelligent error parsing and explanations
+- Specific fix suggestions
+- Conflict detection
+
+### **5. Testing Agent** (QA Engineer)
+- Simulates automations before deployment
+- Tests multiple scenarios
+- Identifies edge cases
+- Provides dry-run capabilities
+
+### **6. Documentation Agent** (Librarian)
+- Auto-generates markdown documentation
+- Creates entity relationship maps
+- Maintains changelogs
+- Keeps documentation synchronized
+
+### **7. Best Practices Agent** (Advisor)
+- Security review
+- Performance analysis
+- Naming convention enforcement
+- Pattern recognition and anti-pattern detection
+
+### **8. Refactoring Agent** (Optimizer)
+- Detects duplicate logic
+- Suggests script extraction
+- Optimizes performance
+- Consolidates similar automations
+
+## Quick Start with Agents
+
+### Using Slash Commands
+
+The easiest way to use the agent system is through slash commands:
+
+```bash
+# Create new automation with guided workflow
+/create-automation
+
+# Find entities for your automation
+/find-entities motion sensors in the kitchen
+
+# Review all automations for issues
+/review-automations
+
+# Debug a failing automation
+/debug-automation
+```
+
+### Programmatic Usage
+
+```python
+from agents.orchestrator import OrchestratorAgent
+from agents.shared_context import SharedContext
+
+# Initialize the system
+context = SharedContext()
+orchestrator = OrchestratorAgent(context)
+
+# Create automation from natural language
+result = orchestrator.run(
+    workflow='create_automation',
+    description="Turn on kitchen lights when motion detected after sunset"
+)
+
+# Check results
+if result.success:
+    automation = result.data['automation']
+    print(f"✅ {result.message}")
+
+    # Review recommendations
+    for rec in result.recommendations:
+        print(f"[{rec['priority']}] {rec['description']}")
+```
+
+## Available Workflows
+
+The Orchestrator provides these complete workflows:
+
+### **create_automation**
+Complete workflow for creating new automations:
+1. Entity Discovery (find relevant entities)
+2. Automation Design (create YAML)
+3. Best Practices Review
+4. Validation (all layers)
+5. Testing (scenarios)
+6. Documentation (generate docs)
+
+```python
+orchestrator.run(
+    workflow='create_automation',
+    description="Turn on lights when door opens"
+)
+```
+
+### **review_automations**
+Comprehensive review of all automations:
+1. Best Practices Review
+2. Refactoring Analysis
+3. Validation Check
+4. Generate Report
+
+```python
+orchestrator.run(workflow='review_automations')
+```
+
+### **debug_automation**
+Debug failing automations:
+1. Validate configuration
+2. Check entity availability
+3. Test trigger conditions
+4. Simulate execution
+5. Provide diagnosis
+
+```python
+orchestrator.run(
+    workflow='debug_automation',
+    automation=problematic_automation
+)
+```
+
+### **find_entities**
+Discover entities by natural language:
+
+```python
+orchestrator.run(
+    workflow='find_entities',
+    query='motion sensors',
+    domain='binary_sensor',
+    area='kitchen',
+    context='trigger'  # For context-aware suggestions
+)
+```
+
+### **validate_config**
+Run comprehensive validation:
+
+```python
+orchestrator.run(
+    workflow='validate_config',
+    validation_type='full',  # or 'yaml', 'references', 'official'
+    file_path='config/automations.yaml'  # optional
+)
+```
+
+### **document_automations**
+Generate documentation:
+
+```python
+orchestrator.run(
+    workflow='document_automations',
+    doc_type='all'  # or 'automation', 'entity_map', 'changelog', 'index'
+)
+```
+
+### **refactor_automations**
+Find optimization opportunities:
+
+```python
+orchestrator.run(
+    workflow='refactor_automations',
+    refactor_type='all'  # or 'duplicates', 'scripts', 'optimize', 'consolidate'
+)
+```
+
+## Agent System Directory Structure
+
+```
+claude-homeassistant/
+├── agents/                        # Agent system (NEW!)
+│   ├── __init__.py               # Package initialization
+│   ├── base_agent.py             # Abstract base class for all agents
+│   ├── shared_context.py         # Shared state management
+│   ├── orchestrator.py           # Master coordinator
+│   ├── creation/                 # Creation agents
+│   │   ├── entity_discovery.py   # Entity search and discovery
+│   │   └── automation_designer.py # Automation creation
+│   ├── validation/               # Validation agents
+│   │   ├── validation_agent.py   # Configuration validation
+│   │   └── testing_agent.py      # Scenario testing
+│   ├── analysis/                 # Analysis agents
+│   │   ├── best_practices.py     # Best practices review
+│   │   └── refactoring.py        # Optimization analysis
+│   └── documentation/            # Documentation agents
+│       └── documentation_agent.py # Doc generation
+├── docs/                         # Generated documentation (NEW!)
+│   ├── AGENT_SYSTEM_GUIDE.md    # Complete user guide
+│   ├── automations/             # Per-automation docs
+│   │   ├── lighting/
+│   │   ├── climate/
+│   │   ├── security/
+│   │   └── general/
+│   ├── entities/                # Entity documentation
+│   │   └── entity_map.md
+│   └── changelog.md             # Automation changelog
+├── .claude-code/
+│   └── commands/                # Slash commands (NEW!)
+│       ├── create-automation.md
+│       ├── review-automations.md
+│       ├── find-entities.md
+│       └── debug-automation.md
+└── config/                      # HA configuration (existing)
+```
+
+## Using Individual Agents
+
+Access specific agents directly through the orchestrator:
+
+```python
+orchestrator = OrchestratorAgent(context)
+
+# Get specific agent
+entity_agent = orchestrator.get_agent('entity_discovery')
+validation_agent = orchestrator.get_agent('validation')
+testing_agent = orchestrator.get_agent('testing')
+
+# Use agent directly
+result = entity_agent.run(
+    query='motion sensors',
+    domain='binary_sensor'
+)
+
+# List all available agents
+for agent_info in orchestrator.list_agents():
+    print(f"{agent_info['name']}: {agent_info['description']}")
+```
+
+## Shared Context System
+
+The SharedContext provides centralized state management:
+
+```python
+context = SharedContext()
+
+# Access registries
+entities = context.get_entities()
+devices = context.get_devices()
+areas = context.get_areas()
+
+# Search and validate
+results = context.search_entities("kitchen")
+exists = context.entity_exists('light.home_kitchen_ceiling')
+
+# Get specific entity
+entity = context.get_entity('binary_sensor.home_kitchen_motion')
+
+# Load automations
+automations = context.get_automations()
+automation = context.get_automation('kitchen_motion_lights')
+
+# Configuration paths
+automations_path = context.get_automations_path()
+config_path = context.get_config_path('automations.yaml')
+
+# Inter-agent communication
+context.send_message('agent1', 'agent2', {'key': 'value'})
+messages = context.get_messages('agent2')
+
+# Shared data storage
+context.set_data('key', value)
+value = context.get_data('key')
+```
+
+## Agent Result Format
+
+All agents return standardized `AgentResult` objects:
+
+```python
+result = agent.run(**kwargs)
+
+# Check success
+if result.success:
+    print(f"✅ {result.message}")
+else:
+    print(f"❌ {result.message}")
+
+# Access data
+data = result.data
+automation = result.data.get('automation')
+
+# Review errors and warnings
+for error in result.errors:
+    print(f"Error: {error}")
+
+for warning in result.warnings:
+    print(f"Warning: {warning}")
+
+# Get recommendations
+for rec in result.recommendations:
+    priority = rec['priority']  # critical, high, medium, low
+    description = rec['description']
+    action = rec.get('action')
+    print(f"[{priority}] {description}")
+    if action:
+        print(f"  Action: {action}")
+```
+
+## Best Practices with Agents
+
+### 1. Always Start with Entity Discovery
+
+Before creating automations, explore available entities:
+
+```python
+# Find relevant entities
+result = orchestrator.run(
+    workflow='find_entities',
+    query='motion',
+    area='kitchen'
+)
+
+# Review options
+for entity in result.data['entities']:
+    print(f"{entity['entity_id']}: {entity['name']}")
+    if entity.get('relevance_reason'):
+        print(f"  → {entity['relevance_reason']}")
+```
+
+### 2. Use Complete Workflows
+
+The orchestrator workflows ensure nothing is missed:
+
+```python
+# Good: Use complete workflow
+result = orchestrator.run(
+    workflow='create_automation',
+    description="..."
+)
+
+# Less ideal: Manual agent coordination
+# (only for advanced custom workflows)
+```
+
+### 3. Review All Recommendations
+
+Agents provide intelligent suggestions - review them:
+
+```python
+if result.recommendations:
+    for rec in result.recommendations:
+        if rec['priority'] in ['critical', 'high']:
+            print(f"⚠️ {rec['description']}")
+            # Consider implementing before deployment
+```
+
+### 4. Test Before Deploying
+
+Always test automations before pushing to HA:
+
+```python
+# Testing is included in create_automation workflow
+# Or run separately:
+testing_result = orchestrator.get_agent('testing').run(
+    automation=automation,
+    test_type='full'
+)
+
+# Review edge cases
+for warning in testing_result.warnings:
+    print(f"Edge case: {warning}")
+```
+
+### 5. Keep Documentation Updated
+
+Auto-generate docs as you go:
+
+```python
+# Documentation is included in create_automation workflow
+# Or update manually:
+doc_result = orchestrator.get_agent('documentation').run(
+    automation=automation,
+    doc_type='automation',
+    update_existing=True
+)
+```
+
+## Integrating Agents with Existing Workflow
+
+The agent system integrates seamlessly:
+
+```
+Traditional Workflow:
+1. make pull
+2. Edit automations.yaml manually
+3. make validate
+4. make push
+
+Enhanced Agent Workflow:
+1. make pull
+2. /create-automation (agents design + validate + test)
+3. Review recommendations
+4. Save to automations.yaml
+5. make push (pre-push validation still runs)
+```
+
+## Troubleshooting the Agent System
+
+### "No module named 'agents'"
+
+```bash
+# Ensure you're in the project root
+cd /home/user/claude-homeassistant
+
+# Python needs to find the agents module
+export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+```
+
+### "SharedContext not initialized"
+
+```python
+# Always create context first
+from agents.shared_context import SharedContext
+context = SharedContext()
+
+# Then create orchestrator
+from agents.orchestrator import OrchestratorAgent
+orchestrator = OrchestratorAgent(context)
+```
+
+### "Entity registry not found"
+
+```bash
+# Pull latest config to get registry files
+make pull
+
+# Verify registry files exist
+ls -la config/.storage/core.entity_registry
+```
+
+### "Agent workflow failed"
+
+```python
+# Check result details
+if not result.success:
+    print(f"Failure: {result.message}")
+    print(f"Errors: {result.errors}")
+
+    # Check data for partial results
+    if result.data:
+        print(f"Partial data: {result.data}")
+```
+
+## Advanced: Creating Custom Workflows
+
+You can create custom workflows by combining agents:
+
+```python
+def custom_workflow(description: str):
+    """Custom workflow: Create + Optimize + Test + Document"""
+
+    context = SharedContext()
+    orchestrator = OrchestratorAgent(context)
+
+    # Step 1: Design
+    design_result = orchestrator.get_agent('automation_designer').run(
+        description=description
+    )
+    automation = design_result.data['automation']
+
+    # Step 2: Optimize
+    practices_result = orchestrator.get_agent('best_practices').run(
+        automation=automation,
+        review_type='full'
+    )
+
+    # Step 3: Apply high-priority recommendations
+    for rec in practices_result.recommendations:
+        if rec['priority'] == 'high':
+            automation = apply_recommendation(automation, rec)
+
+    # Step 4: Validate
+    val_result = orchestrator.get_agent('validation').run(
+        automation=automation
+    )
+
+    # Step 5: Test
+    test_result = orchestrator.get_agent('testing').run(
+        automation=automation,
+        test_type='full'
+    )
+
+    # Step 6: Document
+    doc_result = orchestrator.get_agent('documentation').run(
+        automation=automation,
+        doc_type='automation'
+    )
+
+    return {
+        'automation': automation,
+        'validation': val_result,
+        'testing': test_result,
+        'documentation': doc_result
+    }
+```
+
+## Documentation
+
+- **[Agent System Guide](docs/AGENT_SYSTEM_GUIDE.md)** - Complete user guide with examples
+- **[Agent API Reference](docs/AGENT_API.md)** - Detailed API documentation (coming soon)
+- **Slash Commands** - See `.claude-code/commands/` for usage guides
+
+## Agent System Benefits
+
+✅ **Confidence**: Test automations before deployment
+✅ **Quality**: Best practices enforced automatically
+✅ **Speed**: Natural language to working automation
+✅ **Safety**: Multi-layer validation prevents errors
+✅ **Maintainability**: Auto-generated documentation
+✅ **Intelligence**: Context-aware suggestions
+✅ **Learning**: Agents explain best practices
+
+## Next Steps
+
+1. **Try it out**: Use `/create-automation` to create your first automation
+2. **Review existing**: Run `/review-automations` to analyze current automations
+3. **Explore entities**: Use `/find-entities` to discover what's available
+4. **Read the guide**: See `docs/AGENT_SYSTEM_GUIDE.md` for comprehensive documentation
+
+The agent system is designed to make Home Assistant automation development safer, faster, and more enjoyable! 🏠✨
