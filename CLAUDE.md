@@ -114,6 +114,217 @@ For Home Assistant dashboard/Lovelace configurations:
 4. **Iterate 2-3 times** for quality improvements
 5. **Commit** final version
 
+#### 4. Multi-File Workflows
+
+Many Home Assistant features require coordinated changes across multiple files. Handle these systematically:
+
+**Common Multi-File Patterns:**
+
+**Pattern 1: Automation with Helper Entities**
+```
+Request: "Create automation with adjustable brightness"
+
+Files to modify:
+1. config/configuration.yaml - Define input_number helper
+2. config/automations.yaml - Reference helper in automation
+
+Workflow:
+→ Read both files to understand current structure
+→ Add helper entity definition first
+→ Create automation referencing the helper
+→ Validate both files
+→ Test that helper appears in UI
+→ Commit both changes together
+```
+
+**Pattern 2: Automation with Reusable Script**
+```
+Request: "Secure home when leaving (multiple actions)"
+
+Files to modify:
+1. config/scripts.yaml - Create reusable script
+2. config/automations.yaml - Call script from automation
+
+Benefits:
+→ Script can be reused by multiple automations
+→ Script can be triggered manually from UI
+→ Easier to test and maintain
+→ Changes to script affect all automations using it
+```
+
+**Pattern 3: Complex Scene with Automation**
+```
+Request: "Movie mode that dims lights and adjusts thermostat"
+
+Files to modify:
+1. config/scenes.yaml - Define scene with all entity states
+2. config/automations.yaml - Automation to activate scene
+3. config/automations.yaml - Automation to restore previous state
+
+Workflow:
+→ Create scene with desired states
+→ Create activation automation
+→ Create restoration automation
+→ Validate scene activates correctly
+→ Test that restoration works
+```
+
+**Pattern 4: Integration Configuration**
+```
+Request: "Add weather integration"
+
+Files to modify:
+1. config/configuration.yaml - Add integration config
+2. config/secrets.yaml - Store API key
+3. config/automations.yaml - Create weather-based automation
+
+Security:
+→ NEVER commit secrets.yaml
+→ Use !secret tag in configuration.yaml
+→ Validate without exposing secrets
+```
+
+**Best Practices for Multi-File Changes:**
+
+1. **Plan the Dependency Graph**
+   ```
+   Before editing, identify:
+   - Which files need changes?
+   - What's the dependency order?
+   - Which entities reference which?
+   - What could break if one fails?
+   ```
+
+2. **Edit in Dependency Order**
+   ```
+   Good order:
+   1. Base configs (configuration.yaml)
+   2. Shared resources (scripts.yaml, scenes.yaml)
+   3. Consumers (automations.yaml)
+
+   Why: Ensures references exist before they're used
+   ```
+
+3. **Validate Incrementally**
+   ```
+   After each file edit:
+   → Run validation
+   → Check for new errors
+   → Fix before moving to next file
+
+   Result: Isolate errors to specific changes
+   ```
+
+4. **Use Slash Commands for Multi-File Workflows**
+   ```
+   /create-automation - Automatically handles multi-file needs
+   /review-automation - Checks cross-file dependencies
+   /safe-deploy - Validates all related files together
+   ```
+
+5. **Document Cross-File Dependencies**
+   ```
+   In commit messages:
+   "Add brightness automation with helper input
+
+   - configuration.yaml: Added input_number helper
+   - automations.yaml: Added automation using helper
+
+   These files must be deployed together."
+   ```
+
+**Common Multi-File Pitfalls:**
+
+❌ **Editing files in wrong order**
+```
+Bad: Create automation first, add helper second
+Result: Validation fails, automation references non-existent entity
+Good: Add helper first, then create automation
+```
+
+❌ **Forgetting to validate all changed files**
+```
+Bad: Validate only automations.yaml
+Result: Syntax error in configuration.yaml breaks HA restart
+Good: Run full validation suite (all files)
+```
+
+❌ **Partial commits**
+```
+Bad: Commit automation without helper
+Result: Broken automation in git history
+Good: Commit all related changes together
+```
+
+❌ **Assuming entities exist**
+```
+Bad: Reference script.secure_home without checking
+Result: Automation fails silently at runtime
+Good: Read scripts.yaml first to verify it exists
+```
+
+**Multi-File Workflow Example:**
+
+```
+User: "Create automation to adjust thermostat based on occupancy
+       with configurable temperature settings"
+
+Claude's approach:
+1. PLAN multi-file changes:
+   - configuration.yaml: input_number for temperatures
+   - automations.yaml: occupancy-based automation
+
+2. READ existing files:
+   - Check configuration.yaml structure
+   - Check current automations
+   - Find occupancy sensors
+
+3. EDIT in order:
+   a. configuration.yaml - Add helpers:
+      - input_number.occupied_temp
+      - input_number.unoccupied_temp
+   b. automations.yaml - Add automation referencing helpers
+
+4. VALIDATE after each edit:
+   - After helpers: Check YAML syntax
+   - After automation: Check entity references
+
+5. TEST logic:
+   - Verify helpers appear in UI
+   - Check automation triggers correctly
+   - Confirm template renders properly
+
+6. COMMIT together:
+   "Add occupancy-based thermostat automation
+
+   - configuration.yaml: Temperature input helpers
+   - automations.yaml: Occupancy automation
+
+   Helpers allow UI adjustment without editing YAML."
+```
+
+**When to Use Multi-File Patterns:**
+
+✅ **Use scripts** when:
+- Same actions used by multiple automations
+- Actions are complex and benefit from abstraction
+- You want manual triggering capability
+
+✅ **Use helpers** when:
+- Values need UI adjustment
+- Settings should persist across restarts
+- Multiple automations share configuration
+
+✅ **Use scenes** when:
+- Setting multiple entity states together
+- Wanting quick state restoration
+- Creating mood/mode presets
+
+✅ **Use groups** when:
+- Controlling multiple entities as one
+- Simplifying automation targets
+- Creating logical entity collections
+
 ### Instruction Specificity
 
 **Vague instructions lead to suboptimal results.** Be specific about requirements, constraints, and edge cases.
@@ -207,6 +418,110 @@ For complex projects, consider running multiple Claude instances:
    - Instance 3: Refactoring validators
 
 **Setup**: Use separate terminal windows or tmux panes, each with its own Claude Code session.
+
+## Personal Configuration (CLAUDE.local.md)
+
+### Customizing Claude's Behavior
+
+While this project provides comprehensive team-wide documentation via CLAUDE.md and subdirectory guides, **you can personalize Claude's behavior** for your own development style without affecting the shared configuration.
+
+**CLAUDE.local.md** is a personal configuration file that:
+- ✅ **Overrides team defaults** with your personal preferences
+- ✅ **Never committed to git** (in .gitignore)
+- ✅ **Automatically loaded** by Claude Code alongside shared CLAUDE.md
+- ✅ **Supports all markdown features** - sections, code blocks, lists, examples
+
+### Creating Your Personal Configuration
+
+**Quick Start:**
+```bash
+# Copy the template to create your personal config
+cp CLAUDE.local.md.template CLAUDE.local.md
+
+# Edit with your preferences
+# (Use your preferred editor)
+```
+
+The template includes sections for:
+- **Development Preferences**: Your typical workflow patterns
+- **Environment Setup**: Your Home Assistant URL, areas of focus, special entities
+- **Coding Style**: Python/YAML style preferences
+- **Communication**: How you prefer Claude to respond (detail level, explanations, emojis)
+- **Tool Usage**: Which tools you use frequently
+- **Personal Automations**: What you're currently working on
+- **MCP Preferences**: Whether you use MCP and how
+
+### Benefits
+
+**For Individual Developers:**
+- Claude remembers your coding style preferences
+- Adapts communication style to your preference (concise vs verbose)
+- Knows which entities and areas you typically work with
+- Understands your current projects for more relevant assistance
+- Respects your workflow preferences (e.g., "always ask before deploying")
+
+**For Teams:**
+- Each team member can have different preferences
+- Shared CLAUDE.md provides team standards
+- Personal CLAUDE.local.md customizes without conflicts
+- No merge conflicts from personal preferences
+
+### Example Use Cases
+
+**Scenario 1: Different Detail Preferences**
+```markdown
+# In your CLAUDE.local.md
+## Communication Preferences
+- Detail level: Concise
+- Explanations: Only when asked
+- Code comments: Minimal
+```
+
+**Scenario 2: Project-Specific Context**
+```markdown
+# In your CLAUDE.local.md
+## What I'm Currently Working On
+- Migrating all motion sensor automations to new Z-Wave sensors
+- Working primarily with: binary_sensor.home_*_motion entities
+- Areas: basement, garage, driveway
+- Always test motion automations manually before deploying
+```
+
+**Scenario 3: Personal Constraints**
+```markdown
+# In your CLAUDE.local.md
+## Personal Notes
+- Always confirm before deploying climate automations (expensive if wrong!)
+- I'm learning HA, so please explain Jinja2 templates when using them
+- Prefer entity_id over friendly names in automations
+```
+
+### Privacy and Security
+
+**Safe to include:**
+- Your specific entity names (e.g., `climate.office_bedroom_thermostat`)
+- Areas you work in
+- Personal workflow preferences
+- Current project context
+- Skill level and learning goals
+
+**Avoid including:**
+- Passwords or API tokens (use `.env` for those)
+- Personal identifying information
+- Detailed physical security layouts
+- Home address or location details
+
+**Note**: CLAUDE.local.md is in `.gitignore` and will never be committed, but it may still appear in local backups.
+
+### Template Reference
+
+See **CLAUDE.local.md.template** for a complete example with:
+- All available sections
+- Example configurations
+- Usage tips
+- Best practices
+
+**The template is comprehensive** - you don't need to fill out every section, just the ones relevant to your workflow.
 
 ## MCP Server Configuration
 
@@ -403,6 +718,186 @@ You can create project-specific MCP servers for:
 - `.claude-code/` - Project-specific Claude Code settings and hooks
   - `hooks/` - Validation hooks that run automatically
   - `settings.json` - Project configuration
+
+## Tool Configuration and Allowlist
+
+### Understanding Tool Permissions
+
+Claude Code uses various tools to interact with your codebase. This project has configured a **tool allowlist** that enables Claude to work efficiently without requiring manual approval for each operation.
+
+**Why Tool Allowlists Matter:**
+- ⚡ **Faster workflows**: Claude can read, edit, and validate files immediately
+- 🔒 **Safety through hooks**: Validation hooks catch errors regardless of tool permissions
+- 🎯 **Focused development**: No interruptions for routine operations
+- 📊 **Transparent operations**: All tool usage is logged and can be reviewed
+
+### Pre-Approved Tools
+
+These tools are configured in `.claude-code/settings.json` and don't require explicit approval:
+
+#### File Operations
+- **Read** - Read files to understand codebase
+- **Edit** - Modify existing files (always reads first)
+- **Write** - Create new files when necessary
+- **Glob** - Find files matching patterns
+- **Grep** - Search code for specific content
+
+#### Task Management
+- **Task** - Launch specialized agents for complex operations
+- **TodoWrite** - Track progress with TODO lists
+- **ExitPlanMode** - Complete planning phase
+
+#### Execution
+- **Bash** - Run terminal commands (git, make, validation tools)
+- **BashOutput** - Monitor output from background processes
+- **KillShell** - Stop background processes
+
+#### Research
+- **WebFetch** - Fetch documentation and resources
+- **WebSearch** - Search for solutions and information
+
+#### Specialized
+- **NotebookEdit** - Edit Jupyter notebooks
+- **Skill** - Execute project-specific skills
+
+### Project-Specific Tool Guidance
+
+Based on this project's needs, Claude follows these tool usage patterns:
+
+#### File Operations Best Practices
+```markdown
+✅ Always read files before editing
+✅ Use Edit for modifying existing files (preserves formatting)
+✅ Run validation after config changes
+✅ Prefer incremental changes over large rewrites
+
+❌ Don't use Write for existing files (use Edit instead)
+❌ Don't skip validation after YAML changes
+❌ Don't edit .storage/ files (read-only)
+```
+
+#### Execution Best Practices
+```markdown
+✅ Validate before every push (make validate)
+✅ Use hooks for automatic validation
+✅ Test automations incrementally
+✅ Run Python tools with venv activated
+
+❌ Don't push without validation passing
+❌ Don't bypass pre-push hooks
+❌ Don't run tools without activating venv
+```
+
+#### Research Best Practices
+```markdown
+✅ Use entity_explorer.py before creating automations
+✅ Verify entities exist in registry
+✅ Check Home Assistant docs when unsure
+✅ Search existing automations for patterns
+
+❌ Don't guess entity names
+❌ Don't assume services exist
+❌ Don't skip entity discovery phase
+```
+
+### Safety Through Hooks
+
+While tools are pre-approved, **validation hooks ensure safety**:
+
+1. **Post-Edit Validation** (`.claude-code/hooks/posttooluse-ha-validation.sh`)
+   - Runs after YAML edits in `config/`
+   - Validates syntax, entities, and HA config
+   - Non-blocking - warns but allows work to continue
+
+2. **Pre-Push Validation** (`.claude-code/hooks/pretooluse-ha-push-validation.sh`)
+   - Runs before `make push` or deployment
+   - **Blocking** - prevents invalid configs from reaching HA
+   - Ensures only validated configs are deployed
+
+3. **Python Quality Checks** (`.claude-code/hooks/posttooluse-python-quality.sh`)
+   - Runs after Python file edits
+   - Auto-formats with Black and isort
+   - Runs linting and type checking
+
+**Result**: Fast development + Safe deployments
+
+### Customizing Tool Configuration
+
+The tool configuration is in `.claude-code/settings.json`:
+
+```json
+{
+  "tools": {
+    "allowlist": {
+      "file_operations": ["Read", "Edit", "Write", "Glob", "Grep"],
+      "task_management": ["Task", "TodoWrite", "ExitPlanMode"],
+      "execution": ["Bash", "BashOutput", "KillShell"],
+      "research": ["WebFetch", "WebSearch"],
+      "notebook": ["NotebookEdit"],
+      "project_specific": ["Skill"]
+    },
+    "guidance": {
+      "file_operations": {
+        "always_read_before_edit": true,
+        "use_validation_after_changes": true,
+        "prefer_edit_over_write": true
+      },
+      "execution": {
+        "validate_before_push": true,
+        "use_hooks_for_safety": true,
+        "test_incrementally": true
+      },
+      "research": {
+        "use_entity_explorer_before_automations": true,
+        "verify_entity_existence": true,
+        "check_ha_docs_when_unsure": true
+      }
+    }
+  }
+}
+```
+
+**To modify**:
+1. Edit `.claude-code/settings.json`
+2. Add/remove tools from allowlist
+3. Update guidance flags as needed
+4. Changes take effect immediately
+
+### Personal Tool Preferences
+
+If you have personal tool preferences different from the team, use **CLAUDE.local.md**:
+
+```markdown
+# In your CLAUDE.local.md
+## Personal Tool Allowlist
+**Custom permissions:**
+- Always ask before running Bash commands that modify git history
+- Auto-approve all Read operations
+- Prefer verbose output for Bash commands
+```
+
+### Benefits of This Configuration
+
+**For This Project:**
+- ✅ Automatic validation after every edit
+- ✅ Blocked invalid pushes to Home Assistant
+- ✅ Fast iteration on automations
+- ✅ Safe experimentation with configs
+- ✅ Entity validation without manual checks
+
+**For Development Workflow:**
+- ✅ Claude can read docs and examples freely
+- ✅ Edits are validated immediately by hooks
+- ✅ Git operations require explicit confirmation (not in allowlist)
+- ✅ Dangerous operations (force push, rm -rf) are never auto-approved
+
+### Monitoring Tool Usage
+
+All tool usage is logged and visible in Claude Code's interface. Review logs to:
+- Understand what Claude did during a session
+- Debug issues with file edits or validation
+- Learn Claude's problem-solving approach
+- Verify no unintended changes were made
 
 ## Available Commands
 
