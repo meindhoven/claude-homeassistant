@@ -8,9 +8,10 @@ Click to play
 ## 🌟 Features
 
 ### 🤖 Multi-Agent Development System (NEW!)
-- **8 Specialized AI Agents**: Orchestrator + 7 specialized agents for complete automation lifecycle
+- **10 Specialized AI Agents**: Orchestrator + 9 specialized agents for complete HA development lifecycle
 - **Natural Language Automation**: Describe what you want, get production-ready YAML
 - **Intelligent Entity Discovery**: Context-aware entity search with capability explanations
+- **Dashboard Design**: Create user-friendly dashboards with UX/accessibility best practices
 - **Automated Testing**: Simulate scenarios before deployment to catch edge cases
 - **Auto-Documentation**: Generates markdown docs, entity maps, and changelogs
 - **Best Practices Enforcement**: Security, performance, and pattern analysis
@@ -162,6 +163,19 @@ This repository includes a comprehensive **8-agent system** that transforms Home
 - Suggests script extraction
 - Identifies consolidation opportunities
 
+**🎨 Dashboard Designer Agent** - Creates user-friendly dashboards
+- Designs dashboards from natural language descriptions
+- Selects appropriate card types for entities
+- Organizes views and sections logically
+- Follows responsive design patterns
+
+**📐 Dashboard Best Practices Agent** - Reviews dashboard UX and accessibility
+- Reviews dashboards for usability
+- Validates accessibility standards (WCAG-inspired)
+- Analyzes visual design and consistency
+- Evaluates performance and mobile optimization
+- Calculates quality scores
+
 ### Using the Agent System
 
 #### Slash Commands (Easiest)
@@ -178,6 +192,9 @@ This repository includes a comprehensive **8-agent system** that transforms Home
 
 # Debug a failing automation
 /debug-automation
+
+# Design a user-friendly dashboard
+/design-dashboard
 ```
 
 #### Programmatic Usage
@@ -214,6 +231,8 @@ if result.success:
 - **validate_config** - Multi-layer validation with intelligent error resolution
 - **document_automations** - Auto-generate markdown documentation and entity maps
 - **refactor_automations** - Find optimization opportunities and duplicate patterns
+- **design_dashboard** - Design user-friendly dashboards with UX/accessibility best practices
+- **review_dashboard** - Review existing dashboards for UX, accessibility, and performance issues
 
 ### Example: Creating an Automation
 
