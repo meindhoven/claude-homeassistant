@@ -2,6 +2,26 @@
 
 This repository manages Home Assistant configuration files with automated validation, testing, and deployment.
 
+## Slash Commands (Quick Actions)
+
+Use these slash commands for common workflows:
+
+### Core Workflows
+- `/validate-config` - Run complete validation suite
+- `/create-automation` - Guided automation creation with entity discovery
+- `/explore-entities` - Interactive entity discovery and search
+- `/safe-deploy` - Validate, backup, and push to Home Assistant
+- `/pull-latest` - Sync latest config from Home Assistant
+
+### Utilities
+- `/backup-config` - Create timestamped backup
+- `/fix-yaml` - Auto-fix YAML formatting issues
+- `/review-automation` - Analyze and improve existing automation
+- `/troubleshoot` - Diagnose configuration issues
+- `/entity-search` - Quick entity lookup with filters
+
+Simply type the slash command (e.g., `/validate-config`) to start the workflow.
+
 ## Project Structure
 
 - `config/` - Contains all Home Assistant configuration files (synced from HA instance)
@@ -9,6 +29,8 @@ This repository manages Home Assistant configuration files with automated valida
 - `venv/` - Python virtual environment with dependencies
 - `temp/` - Temporary directory for Claude to write and test code before moving to final locations
 - `Makefile` - Commands for pulling/pushing configuration
+- `.claude/` - Claude Code slash commands
+  - `commands/` - Custom workflow commands (see Slash Commands above)
 - `.claude-code/` - Project-specific Claude Code settings and hooks
   - `hooks/` - Validation hooks that run automatically
   - `settings.json` - Project configuration
