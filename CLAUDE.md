@@ -208,6 +208,188 @@ For complex projects, consider running multiple Claude instances:
 
 **Setup**: Use separate terminal windows or tmux panes, each with its own Claude Code session.
 
+## MCP Server Configuration
+
+### What is MCP?
+
+**Model Context Protocol (MCP)** is a protocol that allows Claude to communicate directly with external services during sessions. For Home Assistant, this enables:
+
+- ✅ **Real-time entity queries**: Check current state of devices without parsing files
+- ✅ **Service calls**: Test automations by calling HA services directly
+- ✅ **Live validation**: Verify entities exist against running HA instance
+- ✅ **State inspection**: Debug automations with live state data
+- ✅ **Direct API access**: Full Home Assistant API available to Claude
+
+### Available Options
+
+#### Option 1: Official Home Assistant MCP (HA 2025.2+)
+
+Home Assistant 2025.2+ includes built-in MCP server support:
+- Exposed at `/api/mcp` endpoint
+- OAuth authentication support
+- Access control via exposed entities page
+- Full Assist API integration
+
+**Setup:**
+1. Ensure Home Assistant 2025.2 or later
+2. Enable "Model Context Protocol Server" integration
+3. Configure exposed entities for Claude access
+4. Use your HA URL + `/api/mcp` as endpoint
+
+#### Option 2: Community MCP Servers
+
+Several community implementations available:
+
+**allenporter/mcp-server-home-assistant** (Recommended)
+- Full WebSocket API support
+- Entity state queries and service calls
+- Active development and maintenance
+- Install: `uvx mcp-server-home-assistant`
+
+**Other options:**
+- `tevonsb/homeassistant-mcp` - Alternative implementation
+- `voska/hass-mcp` - Docker-focused approach
+
+### Configuration
+
+The `.mcp.json` file in the project root provides two pre-configured servers (both disabled by default):
+
+```json
+{
+  "mcpServers": {
+    "homeassistant": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-homeassistant"],
+      "env": {
+        "HOME_ASSISTANT_URL": "${HA_URL}",
+        "HOME_ASSISTANT_TOKEN": "${HA_TOKEN}"
+      },
+      "disabled": true
+    },
+    "homeassistant-community": {
+      "command": "uvx",
+      "args": ["mcp-server-home-assistant", "-v"],
+      "env": {
+        "HOME_ASSISTANT_WEB_SOCKET_URL": "${HA_URL}/api/websocket",
+        "HOME_ASSISTANT_API_TOKEN": "${HA_TOKEN}"
+      },
+      "disabled": true
+    }
+  }
+}
+```
+
+### Setup Instructions
+
+1. **Ensure Prerequisites:**
+   ```bash
+   # For npx-based server (Option 1):
+   npm --version  # Requires Node.js
+
+   # For uvx-based server (Option 2):
+   pip install uv  # Or: curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+
+2. **Configure Environment:**
+   Your `.env` file already contains the required variables:
+   ```bash
+   HA_TOKEN=your_home_assistant_long_lived_access_token
+   HA_URL=http://your_homeassistant_host:8123
+   ```
+
+3. **Generate Token (if not done):**
+   - Go to Home Assistant → Profile → Security
+   - Scroll to "Long-Lived Access Tokens"
+   - Click "Create Token"
+   - Copy token to `.env` file as `HA_TOKEN`
+
+4. **Enable MCP Server:**
+   Edit `.mcp.json` and change `"disabled": true` to `"disabled": false` for your chosen server.
+
+5. **Restart Claude Code:**
+   Close and reopen Claude Code for MCP configuration to take effect.
+
+6. **Verify Connection:**
+   Ask Claude to query an entity:
+   ```
+   "What's the current state of my living room lights?"
+   ```
+
+### Usage Examples
+
+Once configured, you can interact with Home Assistant directly:
+
+**Query Entity States:**
+```
+User: What's the temperature in the office?
+Claude: [Queries sensor.office_living_room_temperature via MCP]
+        The office is currently 72°F.
+```
+
+**Test Services:**
+```
+User: Turn on the kitchen lights to 50% brightness
+Claude: [Calls light.turn_on service via MCP]
+        Kitchen lights set to 50% brightness.
+```
+
+**Validate Automations:**
+```
+User: Check if binary_sensor.home_basement_motion exists
+Claude: [Queries entity registry via MCP]
+        Yes, that entity exists and is currently "off".
+```
+
+**Debug Automations:**
+```
+User: Why isn't my automation triggering?
+Claude: [Checks entity states via MCP]
+        The person.home entity shows "home" not "away".
+        The automation trigger expects state change to "away".
+```
+
+### Benefits for This Project
+
+1. **Faster Development**: No need to pull configs to check entity states
+2. **Live Debugging**: See real-time state during automation development
+3. **Validation**: Verify entities exist without parsing `.storage` files
+4. **Testing**: Test automations by calling services directly
+5. **Exploration**: Discover entities interactively during sessions
+
+### Troubleshooting
+
+**MCP not connecting:**
+- Verify HA_URL and HA_TOKEN in `.env`
+- Check Home Assistant is accessible from your machine
+- Try `curl $HA_URL/api/` (should return 200 with API message)
+- Check Claude Code logs for MCP connection errors
+
+**Permission errors:**
+- Ensure token has necessary permissions
+- For official integration, check exposed entities settings
+- Token must be "Long-Lived Access Token" not temporary
+
+**Command not found:**
+- For `npx`: Install Node.js from nodejs.org
+- For `uvx`: Install uv via `pip install uv`
+- Verify command in terminal before enabling in `.mcp.json`
+
+### Security Notes
+
+- MCP gives Claude direct API access to Home Assistant
+- Tokens are read from `.env` (never committed to git)
+- Use `.mcp.json` for team-shared configs
+- Create `.mcp.local.json` for personal overrides (add to .gitignore)
+- Consider read-only tokens for development
+
+### Advanced: Custom MCP Servers
+
+You can create project-specific MCP servers for:
+- Custom validation logic
+- Project-specific automation patterns
+- Integration with other tools
+- See: https://modelcontextprotocol.io/docs
+
 ## Project Structure
 
 - `config/` - Contains all Home Assistant configuration files (synced from HA instance)
@@ -215,6 +397,7 @@ For complex projects, consider running multiple Claude instances:
 - `venv/` - Python virtual environment with dependencies
 - `temp/` - Temporary directory for Claude to write and test code before moving to final locations
 - `Makefile` - Commands for pulling/pushing configuration
+- `.mcp.json` - Model Context Protocol server configuration (see MCP Server Configuration section)
 - `.claude/` - Claude Code slash commands
   - `commands/` - Custom workflow commands (see Slash Commands above)
 - `.claude-code/` - Project-specific Claude Code settings and hooks
