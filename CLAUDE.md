@@ -722,11 +722,33 @@ Based on this project's needs, Claude follows these tool usage patterns:
 ✅ Verify entities exist in registry
 ✅ Check Home Assistant docs when unsure
 ✅ Search existing automations for patterns
+✅ Use MCP to check live entity states when debugging
+✅ Use MCP to verify entities are online before deploying
 
 ❌ Don't guess entity names
 ❌ Don't assume services exist
 ❌ Don't skip entity discovery phase
+❌ Don't assume entities are online without checking via MCP
 ```
+
+#### MCP (Model Context Protocol) Best Practices
+```markdown
+✅ Use MCP for live state queries (homeassistant_get_states)
+✅ Use MCP when debugging ("why isn't this triggering?")
+✅ Check battery levels via MCP before trusting sensors
+✅ Verify entities are available (state != 'unavailable')
+✅ Test services exist before using (homeassistant_get_services)
+✅ Use MCP to simulate automation execution
+
+❌ Don't use MCP for discovering ALL entities (use entity registry files)
+❌ Don't use MCP for metadata (area, device_class - use registry)
+❌ Don't skip entity discovery - MCP supplements, doesn't replace
+```
+
+**When to use MCP vs Files:**
+- **Files (entity registry)**: Discovery, metadata, disabled entities, relationships
+- **MCP (live API)**: Current state, availability, battery levels, testing, debugging
+- **Best**: Use BOTH - files for discovery, MCP for state verification
 
 ### Safety Through Hooks
 
