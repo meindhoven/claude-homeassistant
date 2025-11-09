@@ -72,6 +72,7 @@ class ValidationTestRunner:
         validators = [
             ("yaml_validator.py", "YAML Syntax Validation"),
             ("reference_validator.py", "Entity/Device Reference Validation"),
+            ("device_validator.py", "Device Trigger Validation"),
             (
                 "ha_official_validator.py",
                 "Official Home Assistant Configuration Validation",
