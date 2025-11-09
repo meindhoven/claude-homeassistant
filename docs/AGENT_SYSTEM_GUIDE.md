@@ -56,6 +56,20 @@ The Agent System is a multi-agent AI architecture that helps you create, test, v
 - Optimizes performance
 - Consolidates similar automations
 
+### **Dashboard Designer Agent** (The UX Architect)
+- Creates user-friendly dashboards
+- Selects appropriate card types
+- Organizes views and sections
+- Follows responsive design patterns
+- Applies HA dashboard best practices
+
+### **Dashboard Best Practices Agent** (The UX Reviewer)
+- Reviews dashboard usability
+- Checks accessibility standards
+- Validates visual design
+- Analyzes performance
+- Ensures mobile optimization
+
 ---
 
 ## 🚀 Quick Start
@@ -191,6 +205,40 @@ Triggers: ✅ Valid
 Would you like me to update the automation to use the alternative sensor?
 ```
 
+### 5. Designing Dashboards
+
+Use the `/design-dashboard` command:
+
+```
+/design-dashboard
+
+User: Create an overview dashboard for my home
+
+System: 🎨 Designing dashboard...
+
+Step 1: Finding entities...
+  ✓ Found 45 entities across 6 areas
+
+Step 2: Creating views...
+  ✓ Overview: 8 cards (lights, climate, security, weather)
+  ✓ Bedroom: 6 cards (lights, climate, media, sensors)
+  ✓ Kitchen: 5 cards (lights, climate, appliances)
+  ✓ Security: 7 cards (alarm, cameras, sensors, locks)
+
+Step 3: UX and accessibility review...
+  ✓ Quality score: 87/100
+  💡 Recommendations:
+    - Add custom theme for visual consistency
+    - Test on mobile devices for responsive design
+
+✅ Dashboard designed with 4 views
+
+Would you like me to:
+1. Save this dashboard configuration?
+2. Adjust based on recommendations?
+3. Focus on a specific room?
+```
+
 ---
 
 ## 📋 Common Workflows
@@ -290,6 +338,48 @@ print(f"Optimizations: {summary['optimizations']}")
 for rec in result.recommendations:
     if rec['priority'] == 'high':
         print(f"🟠 {rec['description']}")
+```
+
+### Designing Dashboards
+
+```python
+# Design a complete dashboard
+result = orchestrator.run(
+    workflow='design_dashboard',
+    description='Overview dashboard with lights, climate, and security',
+    layout_type='overview'
+)
+
+# Check results
+if result.success:
+    dashboard = result.data['dashboard']
+    quality_score = result.data['quality_score']
+
+    print(f"✅ Dashboard created with {result.data['view_count']} views")
+    print(f"📊 Quality score: {quality_score}/100")
+
+    # Review recommendations
+    for rec in result.recommendations:
+        print(f"[{rec['priority']}] {rec['description']}")
+
+    # Save dashboard
+    import yaml
+    with open('config/lovelace/dashboard.yaml', 'w') as f:
+        yaml.dump(dashboard, f, sort_keys=False)
+
+# Review existing dashboard
+with open('config/lovelace/existing.yaml', 'r') as f:
+    existing_dashboard = yaml.safe_load(f)
+
+review_result = orchestrator.run(
+    workflow='review_dashboard',
+    dashboard=existing_dashboard,
+    review_type='full'
+)
+
+print(f"Quality score: {review_result.data['quality_score']}/100")
+print(f"Issues: {len(review_result.errors)}")
+print(f"Warnings: {len(review_result.warnings)}")
 ```
 
 ---

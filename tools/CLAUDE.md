@@ -10,6 +10,7 @@ This directory contains Python validation scripts for Home Assistant configurati
 **What it runs**:
 - YAML syntax validation
 - Entity reference validation
+- Device trigger validation
 - Official HA validation
 
 ### `yaml_validator.py` - YAML Syntax Validation
@@ -29,13 +30,28 @@ This directory contains Python validation scripts for Home Assistant configurati
 - Reports missing references with file/line context
 **Usage**: `python reference_validator.py`
 
+### `device_validator.py` - Device Trigger Validation
+**Purpose**: Validates device triggers in automations
+**Key features**:
+- Parses device registry from `.storage/core.device_registry`
+- Validates all device_id references in automation triggers
+- Prevents false positives from local validation without physical devices
+- Ready for MCP integration for live device verification
+**Usage**: `python device_validator.py`
+
+**Why this validator exists**:
+Device triggers (like Hue dimmer switches, ZHA remotes) reference devices by device_id. When validating locally without physical devices connected, Home Assistant's official validator reports false errors like "Device has no config entry from domain 'hue'". This validator checks the device registry directly and confirms devices exist, preventing these false positives.
+
 ### `ha_official_validator.py` - Official HA Validation
 **Purpose**: Uses Home Assistant's own validation tools
 **Key features**:
 - Most comprehensive validation
 - Integration-specific checks
 - Platform compatibility verification
+- Filters device trigger errors (false positives) to warnings
 **Usage**: `python ha_official_validator.py`
+
+**Enhanced in v2**: Now detects device trigger validation errors and converts them to warnings instead of failures, since these are expected when validating locally. Actual device validation is handled by `device_validator.py`.
 
 ### `entity_explorer.py` - Entity Discovery Tool
 **Purpose**: Search and explore available HA entities
@@ -125,6 +141,65 @@ All Python code in this directory must:
 - ✅ **Have type hints** (mypy): Function signatures should be typed
 - ✅ **Include docstrings**: Module, class, and function level
 - ✅ **Have tests**: Minimum 80% coverage
+- ✅ **Follow file size limits**: See below for specifics
+
+### File Size Limits
+
+Keep Python files maintainable by following these limits:
+
+**Maximum Sizes:**
+- **File size**: 500 lines maximum
+- **Function size**: 50 lines maximum
+- **Class size**: 100 lines maximum
+
+**Rationale:**
+- Easier to understand and review
+- Faster to navigate and edit
+- Simpler to test individual components
+- Reduces merge conflicts
+- Encourages modular design
+
+**When approaching limits:**
+1. **Extract functions**: Break large functions into smaller, focused ones
+2. **Create modules**: Split large files into separate modules
+3. **Use composition**: Break large classes into smaller components
+4. **Refactor**: Look for repeated patterns that can be abstracted
+
+**Example refactoring:**
+```python
+# Bad: 80-line function
+def validate_all_references(config_path):
+    # ... 80 lines of validation logic
+
+# Good: Multiple focused functions
+def load_configuration(config_path):
+    # ... 10 lines
+
+def extract_entity_references(config):
+    # ... 15 lines
+
+def validate_references(entities, registry):
+    # ... 20 lines
+
+def validate_all_references(config_path):
+    config = load_configuration(config_path)
+    entities = extract_entity_references(config)
+    return validate_references(entities, registry)
+```
+
+**Enforcement:**
+Consider adding pre-commit hooks to check file sizes:
+```bash
+# In .git/hooks/pre-commit
+python -c "
+import sys
+for file in sys.argv[1:]:
+    lines = open(file).readlines()
+    if len(lines) > 500:
+        print(f'ERROR: {file} exceeds 500 lines ({len(lines)} lines)')
+        sys.exit(1)
+" $(git diff --cached --name-only --diff-filter=ACM | grep '\.py$')
+```
 
 ### Pre-commit Hooks
 
@@ -206,7 +281,7 @@ python entity_explorer.py --search "binary_sensor.home_basement_motion"
 
 These tools integrate with Claude Code via:
 
-1. **Hooks**: `.claude-code/hooks/posttooluse-ha-validation.sh` runs after edits
+1. **Hooks**: `.claude/hooks/posttooluse-ha-validation.sh` runs after edits
 2. **Slash Commands**: `/validate-config` runs full suite
 3. **Make Commands**: `make validate` from project root
 

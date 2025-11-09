@@ -2,23 +2,41 @@
 
 This repository manages Home Assistant configuration files with automated validation, testing, and deployment.
 
+## 📚 Documentation Structure
+
+This file contains **Claude Code-specific guidance** for working on this project. For specific topics, see:
+
+- **Home Assistant Configuration**: See [config/CLAUDE.md](config/CLAUDE.md) for HA config guidelines, automation examples, and entity naming conventions
+- **Validation Tool Development**: See [tools/CLAUDE.md](tools/CLAUDE.md) for developing validators with TDD
+- **Hook Development**: See [.claude/hooks/CLAUDE.md](.claude/hooks/CLAUDE.md) for hook patterns and testing
+- **Agent System**: See [docs/AGENT_SYSTEM_GUIDE.md](docs/AGENT_SYSTEM_GUIDE.md) for complete agent documentation
+- **General Overview**: See [README.md](README.md) for quick start and project overview
+
 ## Slash Commands (Quick Actions)
 
 Use these slash commands for common workflows:
 
-### Core Workflows
-- `/validate-config` - Run complete validation suite
-- `/create-automation` - Guided automation creation with entity discovery
-- `/explore-entities` - Interactive entity discovery and search
-- `/safe-deploy` - Validate, backup, and push to Home Assistant
-- `/pull-latest` - Sync latest config from Home Assistant
+### Getting Started
+- `/primer` - Comprehensive repository analysis to prime Claude on the codebase (recommended for new sessions)
+- `/tree` - Visualize repository structure
+
+### AI-Powered Workflows (Agent System)
+- `/create-automation` - Guided automation creation with entity discovery, validation, and testing
+- `/create-automation-prp` - Advanced automation creation using PRP framework for complex automations (one-pass implementation)
+- `/find-entities` - Natural language entity search ("motion sensors in kitchen")
+- `/review-automations` - Comprehensive analysis of all automations
+- `/debug-automation` - Systematic debugging with specific fix suggestions
+- `/design-dashboard` - Create user-friendly dashboards with UX best practices
+
+### Configuration Management
+- `/validate-config` - Run complete validation suite (YAML + entities + official HA)
+- `/safe-deploy` - Validate, backup, and push to Home Assistant (safest deployment method)
+- `/pull-latest` - Sync latest config from Home Assistant instance
+- `/backup-config` - Create timestamped backup
 
 ### Utilities
-- `/backup-config` - Create timestamped backup
 - `/fix-yaml` - Auto-fix YAML formatting issues
-- `/review-automation` - Analyze and improve existing automation
-- `/troubleshoot` - Diagnose configuration issues
-- `/entity-search` - Quick entity lookup with filters
+- `/troubleshoot` - Diagnose configuration issues with step-by-step guidance
 
 Simply type the slash command (e.g., `/validate-config`) to start the workflow.
 
@@ -30,8 +48,11 @@ Simply type the slash command (e.g., `/validate-config`) to start the workflow.
 
 The most effective workflow for feature development:
 
+**Start of session**: Run `/primer` to establish comprehensive repository context (recommended for new Claude Code sessions)
+
 1. **Explore**: Research the codebase first
-   - Use `/explore-entities` to discover available devices
+   - Use `/tree` to visualize repository structure (if needed)
+   - Use `/find-entities` to discover available devices
    - Read relevant configuration files
    - Check existing automations for patterns
    - Search for similar implementations
@@ -46,7 +67,7 @@ The most effective workflow for feature development:
    - Follow one step at a time
    - Use validation hooks to catch errors immediately
    - Test incrementally rather than all at once
-   - Follow naming conventions and best practices
+   - Follow naming conventions (see config/CLAUDE.md)
 
 4. **Commit**: Save work with context
    - Write clear, descriptive commit messages
@@ -58,10 +79,12 @@ The most effective workflow for feature development:
 ```
 User: "Add automation to turn off all lights when I leave"
 
+START: /primer                  # Prime Claude on codebase (new session)
+
 1. EXPLORE:
-   /entity-search             # Find person/device_tracker entities
-   /entity-search             # Find all light entities
-   Read config/automations.yaml  # Check existing patterns
+   /find-entities person         # Find person/device_tracker entities
+   /find-entities lights          # Find all light entities
+   Read config/automations.yaml   # Check existing patterns
 
 2. PLAN:
    - Trigger: person.home changes to "away"
@@ -104,12 +127,14 @@ For validation tools and Python scripts:
 - Prevents regression
 - Makes refactoring safer
 
+**Details**: See [tools/CLAUDE.md](tools/CLAUDE.md) for complete TDD workflow
+
 #### 3. Visual Iteration (for dashboards/UI)
 
 For Home Assistant dashboard/Lovelace configurations:
 
 1. **Provide design mock** or describe desired layout
-2. **Implement UI code** in Lovelace YAML
+2. **Implement UI code** in Lovelace YAML using `/design-dashboard`
 3. **Take screenshot** of result (if possible)
 4. **Iterate 2-3 times** for quality improvements
 5. **Commit** final version
@@ -215,14 +240,7 @@ Security:
    Result: Isolate errors to specific changes
    ```
 
-4. **Use Slash Commands for Multi-File Workflows**
-   ```
-   /create-automation - Automatically handles multi-file needs
-   /review-automation - Checks cross-file dependencies
-   /safe-deploy - Validates all related files together
-   ```
-
-5. **Document Cross-File Dependencies**
+4. **Document Cross-File Dependencies**
    ```
    In commit messages:
    "Add brightness automation with helper input
@@ -256,74 +274,191 @@ Result: Broken automation in git history
 Good: Commit all related changes together
 ```
 
-❌ **Assuming entities exist**
+**More Details**: See [config/CLAUDE.md](config/CLAUDE.md) for HA-specific multi-file patterns
+
+### Code Quality and Development Standards
+
+Maintain high code quality and consistency across the project with these standards.
+
+#### File Size Limits
+
+Keep files manageable and maintainable by following these limits:
+
+**Python Files:**
+- **Maximum file size**: 500 lines
+- **Maximum function size**: 50 lines
+- **Maximum class size**: 100 lines
+
+**YAML Files:**
+- **Automation files**: Keep individual automations under 100 lines
+- **Configuration files**: Break large configs into separate files using `!include`
+
+**Why:**
+- Easier to understand and review
+- Faster to navigate and edit
+- Simpler to test individual components
+- Reduces merge conflicts
+- Easier to refactor
+
+**Enforcement:**
+For Python tools, consider adding pre-commit hooks to check file sizes. See [tools/CLAUDE.md](tools/CLAUDE.md) for implementation guidance.
+
+#### Search and File Discovery
+
+**ALWAYS use ripgrep (`rg`) instead of `grep` or `find`** for better performance:
+
+**✅ Search with ripgrep:**
+```bash
+# Search for pattern in files
+rg "pattern" config/
+
+# Search with context (3 lines before/after)
+rg -C 3 "motion" config/automations.yaml
+
+# Search specific file types
+rg "climate" -t yaml
+
+# Find files by pattern
+rg --files -g "*.yaml" config/
+
+# Case-insensitive search
+rg -i "SENSOR" config/
 ```
-Bad: Reference script.secure_home without checking
-Result: Automation fails silently at runtime
-Good: Read scripts.yaml first to verify it exists
+
+**❌ Avoid grep and find:**
+```bash
+# Don't use grep
+grep -r "pattern" config/
+
+# Don't use find
+find config/ -name "*.yaml"
 ```
 
-**Multi-File Workflow Example:**
+**Benefits of ripgrep:**
+- 10-100x faster than grep
+- Respects .gitignore by default
+- Better default output formatting
+- Built-in file type filtering
+- Unicode support
 
+**Note**: The Grep tool in Claude Code uses ripgrep internally, so prefer using that tool over manual bash commands.
+
+#### Conventional Commit Format
+
+Use conventional commit format for clear, searchable git history:
+
+**Format:**
 ```
-User: "Create automation to adjust thermostat based on occupancy
-       with configurable temperature settings"
+<type>(<scope>): <subject>
 
-Claude's approach:
-1. PLAN multi-file changes:
-   - configuration.yaml: input_number for temperatures
-   - automations.yaml: occupancy-based automation
+<optional body>
 
-2. READ existing files:
-   - Check configuration.yaml structure
-   - Check current automations
-   - Find occupancy sensors
-
-3. EDIT in order:
-   a. configuration.yaml - Add helpers:
-      - input_number.occupied_temp
-      - input_number.unoccupied_temp
-   b. automations.yaml - Add automation referencing helpers
-
-4. VALIDATE after each edit:
-   - After helpers: Check YAML syntax
-   - After automation: Check entity references
-
-5. TEST logic:
-   - Verify helpers appear in UI
-   - Check automation triggers correctly
-   - Confirm template renders properly
-
-6. COMMIT together:
-   "Add occupancy-based thermostat automation
-
-   - configuration.yaml: Temperature input helpers
-   - automations.yaml: Occupancy automation
-
-   Helpers allow UI adjustment without editing YAML."
+<optional footer>
 ```
 
-**When to Use Multi-File Patterns:**
+**Types:**
+- `feat` - New feature or automation
+- `fix` - Bug fix
+- `docs` - Documentation changes
+- `style` - Formatting, whitespace (no code change)
+- `refactor` - Code restructuring (no behavior change)
+- `test` - Adding or updating tests
+- `chore` - Maintenance tasks, dependencies
 
-✅ **Use scripts** when:
-- Same actions used by multiple automations
-- Actions are complex and benefit from abstraction
-- You want manual triggering capability
+**Scopes (examples for this project):**
+- `automation` - Automation changes
+- `validation` - Validator tool changes
+- `agent` - Agent system changes
+- `config` - Configuration file changes
+- `hook` - Hook changes
+- `docs` - Documentation updates
 
-✅ **Use helpers** when:
-- Values need UI adjustment
-- Settings should persist across restarts
-- Multiple automations share configuration
+**Examples:**
+```bash
+# New automation
+git commit -m "feat(automation): Add motion-based lighting for kitchen"
 
-✅ **Use scenes** when:
-- Setting multiple entity states together
-- Wanting quick state restoration
-- Creating mood/mode presets
+# Bug fix in validator
+git commit -m "fix(validation): Handle missing entity gracefully in reference validator"
 
-✅ **Use groups** when:
-- Controlling multiple entities as one
-- Simplifying automation targets
-- Creating logical entity collections
+# Documentation update
+git commit -m "docs(hooks): Add troubleshooting section for validation hooks"
+
+# Refactoring
+git commit -m "refactor(agent): Extract entity discovery logic to separate function"
+
+# Multiple files (use body for details)
+git commit -m "feat(automation): Add climate schedule with configurable settings
+
+- configuration.yaml: Added input_number helpers for temperature
+- scripts.yaml: Created reusable climate control script
+- automations.yaml: Added schedule-based automation
+
+These files must be deployed together."
+```
+
+**Benefits:**
+- Easy to scan git history for specific changes
+- Automated changelog generation possible
+- Clear understanding of change impact
+- Better collaboration in team environments
+
+**Current Practice**: You're already following this pattern informally. This formalizes it for consistency.
+
+#### Line Length
+
+**Maximum line length: 100 characters** (for all files)
+
+**Python:**
+- Enforced by Ruff formatter in tools/
+- Use black-compatible style
+
+**YAML:**
+- Break long lines with proper indentation
+- Use multi-line strings with `|` or `>` for long text
+
+**Markdown:**
+- Prefer breaking at sentence boundaries
+- Code blocks can exceed 100 characters if needed
+
+**Why 100 characters:**
+- Fits on modern displays without horizontal scrolling
+- Works well with side-by-side diffs
+- Compatible with GitHub code review interface
+- Balances readability with conciseness
+
+#### Naming Conventions Summary
+
+**Python (in tools/):**
+```python
+# Variables and functions: snake_case
+entity_id = "sensor.home_kitchen_motion"
+def validate_entity_reference():
+
+# Classes: PascalCase
+class EntityValidator:
+
+# Constants: UPPER_SNAKE_CASE
+MAX_FILE_SIZE = 500
+
+# Private members: _leading_underscore
+def _internal_helper():
+```
+
+**YAML (in config/):**
+```yaml
+# Entity IDs: domain.{scope}_{area}_{device}_{measurement}
+sensor.home_kitchen_motion
+light.office_bedroom_ceiling
+
+# Automation IDs: lowercase with underscores
+automation.kitchen_motion_lights
+
+# Helper entities: descriptive with underscores
+input_number.kitchen_light_brightness
+```
+
+**More Details**: See [config/CLAUDE.md](config/CLAUDE.md) for complete entity naming conventions.
 
 ### Instruction Specificity
 
@@ -558,7 +693,9 @@ This project uses **hass-mcp** (`voska/hass-mcp`), a community MCP server implem
 
 ### Configuration
 
-The `.mcp.json` file in the project root contains the MCP server configuration:
+The MCP server configuration is stored in `.mcp.json` (not tracked in git for security).
+
+**Template file:** `.mcp.json.example` (committed to repository)
 
 ```json
 {
@@ -567,8 +704,8 @@ The `.mcp.json` file in the project root contains the MCP server configuration:
       "command": "uvx",
       "args": ["hass-mcp"],
       "env": {
-        "HA_URL": "${HA_URL}",
-        "HA_TOKEN": "${HA_TOKEN}"
+        "HA_URL": "http://your_homeassistant_host:8123",
+        "HA_TOKEN": "your_long_lived_access_token_here"
       },
       "disabled": false
     }
@@ -579,9 +716,13 @@ The `.mcp.json` file in the project root contains the MCP server configuration:
 **Configuration Details:**
 - `command: "uvx"` - Uses uvx to run the hass-mcp package (auto-installs if needed)
 - `args: ["hass-mcp"]` - The MCP server package name
-- `HA_URL` - Your Home Assistant URL (from `.env` file)
-- `HA_TOKEN` - Your Home Assistant long-lived access token (from `.env` file)
+- `HA_URL` - Your Home Assistant URL (replace with your actual URL)
+- `HA_TOKEN` - Your Home Assistant long-lived access token (replace with actual token)
 - `disabled: false` - MCP server is enabled by default
+
+**Security Note:**
+- `.mcp.json` is in `.gitignore` and will NOT be committed
+- This keeps your credentials secure and private
 
 ### Setup Instructions
 
@@ -597,24 +738,37 @@ The `.mcp.json` file in the project root contains the MCP server configuration:
    uvx --version
    ```
 
-2. **Configure Environment Variables:**
-   Ensure your `.env` file contains the required variables:
+2. **Create your MCP configuration:**
    ```bash
-   HA_TOKEN=your_home_assistant_long_lived_access_token
-   HA_URL=http://your_homeassistant_host:8123
+   # Copy the template
+   cp .mcp.json.example .mcp.json
    ```
 
-3. **Generate Long-Lived Access Token (if not done):**
+3. **Generate Long-Lived Access Token:**
    - Open Home Assistant web interface
    - Navigate to: Profile → Security (bottom left corner → your profile)
    - Scroll to "Long-Lived Access Tokens" section
    - Click "Create Token"
    - Give it a name (e.g., "Claude MCP")
    - Copy the token immediately (you can't view it again!)
-   - Add to `.env` file as `HA_TOKEN=<your_token>`
 
-4. **Verify Configuration:**
-   The MCP server is already configured and enabled in `.mcp.json`. No changes needed unless you want to disable it.
+4. **Edit .mcp.json with your credentials:**
+   ```bash
+   # Open .mcp.json in your editor
+   # Replace the following values:
+   ```
+
+   **Before:**
+   ```json
+   "HA_URL": "http://your_homeassistant_host:8123",
+   "HA_TOKEN": "your_long_lived_access_token_here"
+   ```
+
+   **After (example):**
+   ```json
+   "HA_URL": "http://homeassistant.local:8123",
+   "HA_TOKEN": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+   ```
 
 5. **Restart Claude Code:**
    Close and reopen Claude Code to load the MCP configuration.
@@ -706,20 +860,6 @@ You can create project-specific MCP servers for:
 - Integration with other tools
 - See: https://modelcontextprotocol.io/docs
 
-## Project Structure
-
-- `config/` - Contains all Home Assistant configuration files (synced from HA instance)
-- `tools/` - Validation and testing scripts
-- `venv/` - Python virtual environment with dependencies
-- `temp/` - Temporary directory for Claude to write and test code before moving to final locations
-- `Makefile` - Commands for pulling/pushing configuration
-- `.mcp.json` - Model Context Protocol server configuration (see MCP Server Configuration section)
-- `.claude/` - Claude Code slash commands
-  - `commands/` - Custom workflow commands (see Slash Commands above)
-- `.claude-code/` - Project-specific Claude Code settings and hooks
-  - `hooks/` - Validation hooks that run automatically
-  - `settings.json` - Project configuration
-
 ## Tool Configuration and Allowlist
 
 ### Understanding Tool Permissions
@@ -734,7 +874,7 @@ Claude Code uses various tools to interact with your codebase. This project has 
 
 ### Pre-Approved Tools
 
-These tools are configured in `.claude-code/settings.json` and don't require explicit approval:
+These tools are configured in `.claude/settings.json` and don't require explicit approval:
 
 #### File Operations
 - **Read** - Read files to understand codebase
@@ -800,127 +940,99 @@ Based on this project's needs, Claude follows these tool usage patterns:
 
 #### Research Best Practices
 ```markdown
-✅ Use entity_explorer.py before creating automations
+✅ Use /find-entities before creating automations
 ✅ Verify entities exist in registry
 ✅ Check Home Assistant docs when unsure
 ✅ Search existing automations for patterns
+✅ Use MCP to check live entity states when debugging
+✅ Use MCP to verify entities are online before deploying
 
 ❌ Don't guess entity names
 ❌ Don't assume services exist
 ❌ Don't skip entity discovery phase
+❌ Don't assume entities are online without checking via MCP
 ```
 
-#### MCP Best Practices
+#### MCP (Model Context Protocol) Best Practices
 ```markdown
-✅ Use MCP to query live entity states
-✅ Verify entity existence against running HA instance
-✅ Test service calls before adding to automations
-✅ Use get_entities for batch queries
-✅ Check entity states when debugging automations
+✅ Use MCP for live state queries (homeassistant_get_states)
+✅ Use MCP when debugging ("why isn't this triggering?")
+✅ Check battery levels via MCP before trusting sensors
+✅ Verify entities are available (state != 'unavailable')
+✅ Test services exist before using (homeassistant_get_services)
+✅ Use MCP to simulate automation execution
 
-❌ Don't rely solely on config files for entity info
-❌ Don't call services that modify state without asking
-❌ Don't assume MCP is available (check .env configured)
+❌ Don't use MCP for discovering ALL entities (use entity registry files)
+❌ Don't use MCP for metadata (area, device_class - use registry)
+❌ Don't skip entity discovery - MCP supplements, doesn't replace
 ```
+
+**When to use MCP vs Files:**
+- **Files (entity registry)**: Discovery, metadata, disabled entities, relationships
+- **MCP (live API)**: Current state, availability, battery levels, testing, debugging
+- **Best**: Use BOTH - files for discovery, MCP for state verification
 
 ### Safety Through Hooks
 
 While tools are pre-approved, **validation hooks ensure safety**:
 
-1. **Post-Edit Validation** (`.claude-code/hooks/posttooluse-ha-validation.sh`)
+1. **Post-Edit Validation** (`.claude/hooks/posttooluse-ha-validation.sh`)
    - Runs after YAML edits in `config/`
    - Validates syntax, entities, and HA config
    - Non-blocking - warns but allows work to continue
 
-2. **Pre-Push Validation** (`.claude-code/hooks/pretooluse-ha-push-validation.sh`)
+2. **Pre-Push Validation** (`.claude/hooks/pretooluse-ha-push-validation.sh`)
    - Runs before `make push` or deployment
    - **Blocking** - prevents invalid configs from reaching HA
    - Ensures only validated configs are deployed
 
-3. **Python Quality Checks** (`.claude-code/hooks/posttooluse-python-quality.sh`)
+3. **Python Quality Checks** (`.claude/hooks/posttooluse-python-quality.sh`)
    - Runs after Python file edits
    - Auto-formats with Black and isort
    - Runs linting and type checking
 
 **Result**: Fast development + Safe deployments
 
-### Customizing Tool Configuration
+**More Details**: See [.claude/hooks/CLAUDE.md](.claude/hooks/CLAUDE.md) for complete hook documentation
 
-The tool configuration is in `.claude-code/settings.json`:
+## 🤖 Multi-Agent Development System
 
-```json
-{
-  "tools": {
-    "allowlist": {
-      "file_operations": ["Read", "Edit", "Write", "Glob", "Grep"],
-      "task_management": ["Task", "TodoWrite", "ExitPlanMode"],
-      "execution": ["Bash", "BashOutput", "KillShell"],
-      "research": ["WebFetch", "WebSearch"],
-      "notebook": ["NotebookEdit"],
-      "project_specific": ["Skill"]
-    },
-    "guidance": {
-      "file_operations": {
-        "always_read_before_edit": true,
-        "use_validation_after_changes": true,
-        "prefer_edit_over_write": true
-      },
-      "execution": {
-        "validate_before_push": true,
-        "use_hooks_for_safety": true,
-        "test_incrementally": true
-      },
-      "research": {
-        "use_entity_explorer_before_automations": true,
-        "verify_entity_existence": true,
-        "check_ha_docs_when_unsure": true
-      }
-    }
-  }
-}
+This repository includes a comprehensive **multi-agent system** for intelligent Home Assistant automation development.
+
+**For complete agent documentation**, see:
+- **[docs/AGENT_SYSTEM_GUIDE.md](docs/AGENT_SYSTEM_GUIDE.md)** - Complete user guide with examples, workflows, and API reference
+
+### Quick Overview
+
+The agent system provides:
+- **10 Specialized Agents**: Entity discovery, automation design, validation, testing, documentation, best practices, refactoring, and dashboard design
+- **Natural Language Automation**: Describe what you want, get production-ready YAML
+- **Automated Testing**: Simulate scenarios before deployment
+- **Auto-Documentation**: Generates docs, entity maps, and changelogs
+- **Best Practices Enforcement**: Security, performance, and pattern analysis
+
+### Getting Started with Agents
+
+Use slash commands for guided workflows:
+
+```bash
+# Create new automation
+/create-automation
+
+# Review all automations
+/review-automations
+
+# Find entities
+/find-entities motion sensors in the kitchen
+
+# Debug automation
+/debug-automation
+
+# Design dashboard
+/design-dashboard
 ```
 
-**To modify**:
-1. Edit `.claude-code/settings.json`
-2. Add/remove tools from allowlist
-3. Update guidance flags as needed
-4. Changes take effect immediately
-
-### Personal Tool Preferences
-
-If you have personal tool preferences different from the team, use **CLAUDE.local.md**:
-
-```markdown
-# In your CLAUDE.local.md
-## Personal Tool Allowlist
-**Custom permissions:**
-- Always ask before running Bash commands that modify git history
-- Auto-approve all Read operations
-- Prefer verbose output for Bash commands
-```
-
-### Benefits of This Configuration
-
-**For This Project:**
-- ✅ Automatic validation after every edit
-- ✅ Blocked invalid pushes to Home Assistant
-- ✅ Fast iteration on automations
-- ✅ Safe experimentation with configs
-- ✅ Entity validation without manual checks
-
-**For Development Workflow:**
-- ✅ Claude can read docs and examples freely
-- ✅ Edits are validated immediately by hooks
-- ✅ Git operations require explicit confirmation (not in allowlist)
-- ✅ Dangerous operations (force push, rm -rf) are never auto-approved
-
-### Monitoring Tool Usage
-
-All tool usage is logged and visible in Claude Code's interface. Review logs to:
-- Understand what Claude did during a session
-- Debug issues with file edits or validation
-- Learn Claude's problem-solving approach
-- Verify no unintended changes were made
+**Learn More**: See [docs/AGENT_SYSTEM_GUIDE.md](docs/AGENT_SYSTEM_GUIDE.md)
 
 ## Available Commands
 
@@ -944,6 +1056,22 @@ All tool usage is logged and visible in Claude Code's interface. Review logs to:
   - `--area AREA` - Show entities from specific area
   - `--full` - Show complete detailed output
 
+**Note**: All python tools need to be run with `source venv/bin/activate && python <tool_path>`
+
+## Project Structure
+
+- `config/` - Contains all Home Assistant configuration files (synced from HA instance)
+- `tools/` - Validation and testing scripts
+- `agents/` - Multi-agent system for automation development
+- `venv/` - Python virtual environment with dependencies
+- `temp/` - Temporary directory for Claude to write and test code before moving to final locations
+- `Makefile` - Commands for pulling/pushing configuration
+- `.mcp.json` - Model Context Protocol server configuration
+- `.claude/` - Project-specific Claude Code settings and hooks
+  - `commands/` - Custom slash commands
+  - `hooks/` - Validation hooks that run automatically
+  - `settings.json` - Project configuration
+
 ## Validation System
 
 This project includes comprehensive validation to prevent invalid configurations:
@@ -958,13 +1086,7 @@ This project includes comprehensive validation to prevent invalid configurations
 - **Pre-Push Hook**: Validates configuration before pushing to Home Assistant
 - **Blocks invalid pushes**: Prevents uploading broken configurations
 
-## Home Assistant Instance Details
-
-- **Host**: Configure in Makefile `HA_HOST` variable
-- **User**: Configure SSH access as needed
-- **SSH Key**: Configure SSH key authentication
-- **Config Path**: /config/ (standard HA path)
-- **Version**: Compatible with Home Assistant Core 2024.x+
+**More Details**: See [.claude/hooks/CLAUDE.md](.claude/hooks/CLAUDE.md)
 
 ## Entity Registry
 
@@ -991,6 +1113,7 @@ The system tracks entities across these domains:
 - ✅ **YAML Support**: Handles HA-specific tags (!include, !secret, !input)
 - ✅ **Comprehensive Testing**: Multiple validation layers
 - ✅ **Automated Hooks**: Validation runs automatically on file changes
+- ✅ **Multi-Agent System**: AI-powered automation development
 
 ## Important Notes
 
@@ -999,6 +1122,7 @@ The system tracks entities across these domains:
 - **Secrets are skipped** during validation for security
 - **SSH access required** for pull/push operations
 - **Python venv required** for validation tools
+- **Entity naming convention**: See [config/CLAUDE.md](config/CLAUDE.md) for details
 
 ## Troubleshooting
 
@@ -1007,6 +1131,7 @@ The system tracks entities across these domains:
 2. Verify entity references exist in `.storage/` files
 3. Run individual validators to isolate issues
 4. Check HA logs if official validation fails
+5. Use `/troubleshoot` for guided diagnostics
 
 ### SSH Issues
 1. Verify SSH key permissions: `chmod 600 ~/.ssh/your_key`
@@ -1025,604 +1150,3 @@ The system tracks entities across these domains:
 - **Access tokens** in config are for authorized integrations
 
 This system ensures you can confidently manage Home Assistant configurations with Claude while maintaining safety and reliability.
-
-## Entity Naming Convention
-
-This Home Assistant setup uses a **standardized entity naming convention** for multi-location deployments:
-
-### **Format: `location_room_device_sensor`**
-
-**Structure:**
-- **location**: `home`, `office`, `cabin`, etc.
-- **room**: `basement`, `kitchen`, `living_room`, `main_bedroom`, `guest_bedroom`, `driveway`, etc.
-- **device**: `motion`, `heatpump`, `sonos`, `lock`, `vacuum`, `water_heater`, `alarm`, etc.
-- **sensor**: `battery`, `tamper`, `status`, `temperature`, `humidity`, `door`, `running`, etc.
-
-### **Examples:**
-```
-binary_sensor.home_basement_motion_battery
-binary_sensor.home_basement_motion_tamper
-media_player.home_kitchen_sonos
-media_player.office_main_bedroom_sonos
-climate.home_living_room_heatpump
-climate.office_living_room_thermostat
-lock.home_front_door_august
-sensor.office_driveway_camera_battery
-vacuum.home_roborock
-vacuum.office_roborock
-```
-
-### **Benefits:**
-- **Clear location identification** - no ambiguity between properties
-- **Consistent structure** - easy to predict entity names
-- **Automation-friendly** - simple to target location-specific devices
-- **Scalable** - supports additional locations or rooms
-
-### **Implementation:**
-- All location-based entities follow this convention
-- Legacy entities have been systematically renamed
-- New entities should follow this pattern
-- Vendor prefixes (aquanta_, august_, etc.) are replaced with descriptive device names
-
-### **Claude Code Integration:**
-- **Always explore first**: Use entity discovery tools before writing automations (see "Explore → Plan → Code → Commit" workflow above)
-- **Ask for clarification**: When multiple choices exist for sensors or devices, always ask the user
-- **Follow naming convention**: Use the `location_room_device_sensor` pattern when suggesting entity names
-- **Be specific**: Follow instruction specificity guidelines (see Best Practices section)
-- **Validate early**: Use hooks and validation commands frequently
-- **Manage context**: Use `/clear` between unrelated tasks (see Context Management above)
-
-## Important Technical Notes
-
-- All python tools need to be run with  `source venv/bin/activate && python <tool_path>`
-- Validation hooks run automatically but can be manually triggered with `/validate-config`
-- Use slash commands for common workflows - they include built-in validation and safety checks
-
----
-
-# 🤖 Multi-Agent Development System
-
-This repository now includes a **comprehensive multi-agent system** for intelligent Home Assistant automation development. The agent system provides guided workflows for creating, validating, testing, and documenting automations with confidence.
-
-## Agent System Overview
-
-The system consists of 8 specialized agents coordinated by an Orchestrator:
-
-### **1. Orchestrator Agent** (Master Coordinator)
-- Routes requests to appropriate specialists
-- Manages complex multi-agent workflows
-- Consolidates results from multiple agents
-- Handles error recovery and state management
-
-### **2. Entity Discovery Agent** (Explorer)
-- Context-aware entity search
-- Natural language entity discovery
-- Shows entity capabilities and usage
-- Suggests relevant entities for automation context
-
-### **3. Automation Designer Agent** (Architect)
-- Converts natural language to YAML
-- Builds triggers, conditions, and actions
-- Pattern recognition and templates
-- Generates complete automation configurations
-
-### **4. Validation Agent** (Quality Controller)
-- 3-layer validation (YAML, references, official HA)
-- Intelligent error parsing and explanations
-- Specific fix suggestions
-- Conflict detection
-
-### **5. Testing Agent** (QA Engineer)
-- Simulates automations before deployment
-- Tests multiple scenarios
-- Identifies edge cases
-- Provides dry-run capabilities
-
-### **6. Documentation Agent** (Librarian)
-- Auto-generates markdown documentation
-- Creates entity relationship maps
-- Maintains changelogs
-- Keeps documentation synchronized
-
-### **7. Best Practices Agent** (Advisor)
-- Security review
-- Performance analysis
-- Naming convention enforcement
-- Pattern recognition and anti-pattern detection
-
-### **8. Refactoring Agent** (Optimizer)
-- Detects duplicate logic
-- Suggests script extraction
-- Optimizes performance
-- Consolidates similar automations
-
-## Quick Start with Agents
-
-### Using Slash Commands
-
-The easiest way to use the agent system is through slash commands:
-
-```bash
-# Create new automation with guided workflow
-/create-automation
-
-# Find entities for your automation
-/find-entities motion sensors in the kitchen
-
-# Review all automations for issues
-/review-automations
-
-# Debug a failing automation
-/debug-automation
-```
-
-### Programmatic Usage
-
-```python
-from agents.orchestrator import OrchestratorAgent
-from agents.shared_context import SharedContext
-
-# Initialize the system
-context = SharedContext()
-orchestrator = OrchestratorAgent(context)
-
-# Create automation from natural language
-result = orchestrator.run(
-    workflow='create_automation',
-    description="Turn on kitchen lights when motion detected after sunset"
-)
-
-# Check results
-if result.success:
-    automation = result.data['automation']
-    print(f"✅ {result.message}")
-
-    # Review recommendations
-    for rec in result.recommendations:
-        print(f"[{rec['priority']}] {rec['description']}")
-```
-
-## Available Workflows
-
-The Orchestrator provides these complete workflows:
-
-### **create_automation**
-Complete workflow for creating new automations:
-1. Entity Discovery (find relevant entities)
-2. Automation Design (create YAML)
-3. Best Practices Review
-4. Validation (all layers)
-5. Testing (scenarios)
-6. Documentation (generate docs)
-
-```python
-orchestrator.run(
-    workflow='create_automation',
-    description="Turn on lights when door opens"
-)
-```
-
-### **review_automations**
-Comprehensive review of all automations:
-1. Best Practices Review
-2. Refactoring Analysis
-3. Validation Check
-4. Generate Report
-
-```python
-orchestrator.run(workflow='review_automations')
-```
-
-### **debug_automation**
-Debug failing automations:
-1. Validate configuration
-2. Check entity availability
-3. Test trigger conditions
-4. Simulate execution
-5. Provide diagnosis
-
-```python
-orchestrator.run(
-    workflow='debug_automation',
-    automation=problematic_automation
-)
-```
-
-### **find_entities**
-Discover entities by natural language:
-
-```python
-orchestrator.run(
-    workflow='find_entities',
-    query='motion sensors',
-    domain='binary_sensor',
-    area='kitchen',
-    context='trigger'  # For context-aware suggestions
-)
-```
-
-### **validate_config**
-Run comprehensive validation:
-
-```python
-orchestrator.run(
-    workflow='validate_config',
-    validation_type='full',  # or 'yaml', 'references', 'official'
-    file_path='config/automations.yaml'  # optional
-)
-```
-
-### **document_automations**
-Generate documentation:
-
-```python
-orchestrator.run(
-    workflow='document_automations',
-    doc_type='all'  # or 'automation', 'entity_map', 'changelog', 'index'
-)
-```
-
-### **refactor_automations**
-Find optimization opportunities:
-
-```python
-orchestrator.run(
-    workflow='refactor_automations',
-    refactor_type='all'  # or 'duplicates', 'scripts', 'optimize', 'consolidate'
-)
-```
-
-## Agent System Directory Structure
-
-```
-claude-homeassistant/
-├── agents/                        # Agent system (NEW!)
-│   ├── __init__.py               # Package initialization
-│   ├── base_agent.py             # Abstract base class for all agents
-│   ├── shared_context.py         # Shared state management
-│   ├── orchestrator.py           # Master coordinator
-│   ├── creation/                 # Creation agents
-│   │   ├── entity_discovery.py   # Entity search and discovery
-│   │   └── automation_designer.py # Automation creation
-│   ├── validation/               # Validation agents
-│   │   ├── validation_agent.py   # Configuration validation
-│   │   └── testing_agent.py      # Scenario testing
-│   ├── analysis/                 # Analysis agents
-│   │   ├── best_practices.py     # Best practices review
-│   │   └── refactoring.py        # Optimization analysis
-│   └── documentation/            # Documentation agents
-│       └── documentation_agent.py # Doc generation
-├── docs/                         # Generated documentation (NEW!)
-│   ├── AGENT_SYSTEM_GUIDE.md    # Complete user guide
-│   ├── automations/             # Per-automation docs
-│   │   ├── lighting/
-│   │   ├── climate/
-│   │   ├── security/
-│   │   └── general/
-│   ├── entities/                # Entity documentation
-│   │   └── entity_map.md
-│   └── changelog.md             # Automation changelog
-├── .claude-code/
-│   └── commands/                # Slash commands (NEW!)
-│       ├── create-automation.md
-│       ├── review-automations.md
-│       ├── find-entities.md
-│       └── debug-automation.md
-└── config/                      # HA configuration (existing)
-```
-
-## Using Individual Agents
-
-Access specific agents directly through the orchestrator:
-
-```python
-orchestrator = OrchestratorAgent(context)
-
-# Get specific agent
-entity_agent = orchestrator.get_agent('entity_discovery')
-validation_agent = orchestrator.get_agent('validation')
-testing_agent = orchestrator.get_agent('testing')
-
-# Use agent directly
-result = entity_agent.run(
-    query='motion sensors',
-    domain='binary_sensor'
-)
-
-# List all available agents
-for agent_info in orchestrator.list_agents():
-    print(f"{agent_info['name']}: {agent_info['description']}")
-```
-
-## Shared Context System
-
-The SharedContext provides centralized state management:
-
-```python
-context = SharedContext()
-
-# Access registries
-entities = context.get_entities()
-devices = context.get_devices()
-areas = context.get_areas()
-
-# Search and validate
-results = context.search_entities("kitchen")
-exists = context.entity_exists('light.home_kitchen_ceiling')
-
-# Get specific entity
-entity = context.get_entity('binary_sensor.home_kitchen_motion')
-
-# Load automations
-automations = context.get_automations()
-automation = context.get_automation('kitchen_motion_lights')
-
-# Configuration paths
-automations_path = context.get_automations_path()
-config_path = context.get_config_path('automations.yaml')
-
-# Inter-agent communication
-context.send_message('agent1', 'agent2', {'key': 'value'})
-messages = context.get_messages('agent2')
-
-# Shared data storage
-context.set_data('key', value)
-value = context.get_data('key')
-```
-
-## Agent Result Format
-
-All agents return standardized `AgentResult` objects:
-
-```python
-result = agent.run(**kwargs)
-
-# Check success
-if result.success:
-    print(f"✅ {result.message}")
-else:
-    print(f"❌ {result.message}")
-
-# Access data
-data = result.data
-automation = result.data.get('automation')
-
-# Review errors and warnings
-for error in result.errors:
-    print(f"Error: {error}")
-
-for warning in result.warnings:
-    print(f"Warning: {warning}")
-
-# Get recommendations
-for rec in result.recommendations:
-    priority = rec['priority']  # critical, high, medium, low
-    description = rec['description']
-    action = rec.get('action')
-    print(f"[{priority}] {description}")
-    if action:
-        print(f"  Action: {action}")
-```
-
-## Best Practices with Agents
-
-### 1. Always Start with Entity Discovery
-
-Before creating automations, explore available entities:
-
-```python
-# Find relevant entities
-result = orchestrator.run(
-    workflow='find_entities',
-    query='motion',
-    area='kitchen'
-)
-
-# Review options
-for entity in result.data['entities']:
-    print(f"{entity['entity_id']}: {entity['name']}")
-    if entity.get('relevance_reason'):
-        print(f"  → {entity['relevance_reason']}")
-```
-
-### 2. Use Complete Workflows
-
-The orchestrator workflows ensure nothing is missed:
-
-```python
-# Good: Use complete workflow
-result = orchestrator.run(
-    workflow='create_automation',
-    description="..."
-)
-
-# Less ideal: Manual agent coordination
-# (only for advanced custom workflows)
-```
-
-### 3. Review All Recommendations
-
-Agents provide intelligent suggestions - review them:
-
-```python
-if result.recommendations:
-    for rec in result.recommendations:
-        if rec['priority'] in ['critical', 'high']:
-            print(f"⚠️ {rec['description']}")
-            # Consider implementing before deployment
-```
-
-### 4. Test Before Deploying
-
-Always test automations before pushing to HA:
-
-```python
-# Testing is included in create_automation workflow
-# Or run separately:
-testing_result = orchestrator.get_agent('testing').run(
-    automation=automation,
-    test_type='full'
-)
-
-# Review edge cases
-for warning in testing_result.warnings:
-    print(f"Edge case: {warning}")
-```
-
-### 5. Keep Documentation Updated
-
-Auto-generate docs as you go:
-
-```python
-# Documentation is included in create_automation workflow
-# Or update manually:
-doc_result = orchestrator.get_agent('documentation').run(
-    automation=automation,
-    doc_type='automation',
-    update_existing=True
-)
-```
-
-## Integrating Agents with Existing Workflow
-
-The agent system integrates seamlessly:
-
-```
-Traditional Workflow:
-1. make pull
-2. Edit automations.yaml manually
-3. make validate
-4. make push
-
-Enhanced Agent Workflow:
-1. make pull
-2. /create-automation (agents design + validate + test)
-3. Review recommendations
-4. Save to automations.yaml
-5. make push (pre-push validation still runs)
-```
-
-## Troubleshooting the Agent System
-
-### "No module named 'agents'"
-
-```bash
-# Ensure you're in the project root
-cd /home/user/claude-homeassistant
-
-# Python needs to find the agents module
-export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-```
-
-### "SharedContext not initialized"
-
-```python
-# Always create context first
-from agents.shared_context import SharedContext
-context = SharedContext()
-
-# Then create orchestrator
-from agents.orchestrator import OrchestratorAgent
-orchestrator = OrchestratorAgent(context)
-```
-
-### "Entity registry not found"
-
-```bash
-# Pull latest config to get registry files
-make pull
-
-# Verify registry files exist
-ls -la config/.storage/core.entity_registry
-```
-
-### "Agent workflow failed"
-
-```python
-# Check result details
-if not result.success:
-    print(f"Failure: {result.message}")
-    print(f"Errors: {result.errors}")
-
-    # Check data for partial results
-    if result.data:
-        print(f"Partial data: {result.data}")
-```
-
-## Advanced: Creating Custom Workflows
-
-You can create custom workflows by combining agents:
-
-```python
-def custom_workflow(description: str):
-    """Custom workflow: Create + Optimize + Test + Document"""
-
-    context = SharedContext()
-    orchestrator = OrchestratorAgent(context)
-
-    # Step 1: Design
-    design_result = orchestrator.get_agent('automation_designer').run(
-        description=description
-    )
-    automation = design_result.data['automation']
-
-    # Step 2: Optimize
-    practices_result = orchestrator.get_agent('best_practices').run(
-        automation=automation,
-        review_type='full'
-    )
-
-    # Step 3: Apply high-priority recommendations
-    for rec in practices_result.recommendations:
-        if rec['priority'] == 'high':
-            automation = apply_recommendation(automation, rec)
-
-    # Step 4: Validate
-    val_result = orchestrator.get_agent('validation').run(
-        automation=automation
-    )
-
-    # Step 5: Test
-    test_result = orchestrator.get_agent('testing').run(
-        automation=automation,
-        test_type='full'
-    )
-
-    # Step 6: Document
-    doc_result = orchestrator.get_agent('documentation').run(
-        automation=automation,
-        doc_type='automation'
-    )
-
-    return {
-        'automation': automation,
-        'validation': val_result,
-        'testing': test_result,
-        'documentation': doc_result
-    }
-```
-
-## Documentation
-
-- **[Agent System Guide](docs/AGENT_SYSTEM_GUIDE.md)** - Complete user guide with examples
-- **[Agent API Reference](docs/AGENT_API.md)** - Detailed API documentation (coming soon)
-- **Slash Commands** - See `.claude-code/commands/` for usage guides
-
-## Agent System Benefits
-
-✅ **Confidence**: Test automations before deployment
-✅ **Quality**: Best practices enforced automatically
-✅ **Speed**: Natural language to working automation
-✅ **Safety**: Multi-layer validation prevents errors
-✅ **Maintainability**: Auto-generated documentation
-✅ **Intelligence**: Context-aware suggestions
-✅ **Learning**: Agents explain best practices
-
-## Next Steps
-
-1. **Try it out**: Use `/create-automation` to create your first automation
-2. **Review existing**: Run `/review-automations` to analyze current automations
-3. **Explore entities**: Use `/find-entities` to discover what's available
-4. **Read the guide**: See `docs/AGENT_SYSTEM_GUIDE.md` for comprehensive documentation
-
-The agent system is designed to make Home Assistant automation development safer, faster, and more enjoyable! 🏠✨

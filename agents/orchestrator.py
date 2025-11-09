@@ -14,11 +14,13 @@ from agents.shared_context import SharedContext
 # Import specialized agents
 from agents.creation.entity_discovery import EntityDiscoveryAgent
 from agents.creation.automation_designer import AutomationDesignerAgent
+from agents.creation.dashboard_designer import DashboardDesignerAgent
 from agents.validation.validation_agent import ValidationAgent
 from agents.validation.testing_agent import TestingAgent
 from agents.documentation.documentation_agent import DocumentationAgent
 from agents.analysis.best_practices import BestPracticesAgent
 from agents.analysis.refactoring import RefactoringAgent
+from agents.analysis.dashboard_best_practices import DashboardBestPracticesAgent
 
 
 class WorkflowType(Enum):
@@ -30,6 +32,8 @@ class WorkflowType(Enum):
     DOCUMENT_AUTOMATIONS = "document_automations"
     FIND_ENTITIES = "find_entities"
     VALIDATE_CONFIG = "validate_config"
+    DESIGN_DASHBOARD = "design_dashboard"
+    REVIEW_DASHBOARD = "review_dashboard"
 
 
 class OrchestratorAgent(BaseAgent):
@@ -54,20 +58,24 @@ class OrchestratorAgent(BaseAgent):
         # Initialize all specialized agents
         self.entity_discovery = EntityDiscoveryAgent(context)
         self.automation_designer = AutomationDesignerAgent(context)
+        self.dashboard_designer = DashboardDesignerAgent(context)
         self.validation = ValidationAgent(context)
         self.testing = TestingAgent(context)
         self.documentation = DocumentationAgent(context)
         self.best_practices = BestPracticesAgent(context)
+        self.dashboard_best_practices = DashboardBestPracticesAgent(context)
         self.refactoring = RefactoringAgent(context)
 
         # Agent registry
         self.agents = {
             'entity_discovery': self.entity_discovery,
             'automation_designer': self.automation_designer,
+            'dashboard_designer': self.dashboard_designer,
             'validation': self.validation,
             'testing': self.testing,
             'documentation': self.documentation,
             'best_practices': self.best_practices,
+            'dashboard_best_practices': self.dashboard_best_practices,
             'refactoring': self.refactoring
         }
 
@@ -79,7 +87,9 @@ class OrchestratorAgent(BaseAgent):
             WorkflowType.REFACTOR_AUTOMATIONS: self._workflow_refactor_automations,
             WorkflowType.DOCUMENT_AUTOMATIONS: self._workflow_document_automations,
             WorkflowType.FIND_ENTITIES: self._workflow_find_entities,
-            WorkflowType.VALIDATE_CONFIG: self._workflow_validate_config
+            WorkflowType.VALIDATE_CONFIG: self._workflow_validate_config,
+            WorkflowType.DESIGN_DASHBOARD: self._workflow_design_dashboard,
+            WorkflowType.REVIEW_DASHBOARD: self._workflow_review_dashboard
         }
 
     @property
@@ -99,7 +109,9 @@ class OrchestratorAgent(BaseAgent):
             "refactor_automations",
             "document_automations",
             "find_entities",
-            "validate_config"
+            "validate_config",
+            "design_dashboard",
+            "review_dashboard"
         ]
 
     def execute(self, **kwargs) -> AgentResult:
@@ -491,6 +503,144 @@ class OrchestratorAgent(BaseAgent):
         return self.validation.run(
             validation_type=validation_type,
             file_path=file_path
+        )
+
+    def _workflow_design_dashboard(self, **kwargs) -> AgentResult:
+        """
+        Complete workflow for designing a Home Assistant dashboard.
+
+        Steps:
+        1. Gather entities based on user requirements
+        2. Design dashboard layout with views and cards
+        3. Review UX and accessibility
+        4. Generate final configuration
+
+        Args:
+            description: Natural language description of desired dashboard
+            entities: Optional list of entity IDs to include
+            layout_type: Optional layout pattern (overview, room, security, etc.)
+        """
+        description = kwargs.get('description', '')
+        entities = kwargs.get('entities', [])
+        layout_type = kwargs.get('layout_type', 'overview')
+
+        workflow_results = {
+            'entity_discovery': None,
+            'dashboard_design': None,
+            'ux_review': None
+        }
+
+        all_recommendations = []
+
+        # Step 1: Entity Discovery (if entities not provided)
+        if not entities and description:
+            self.logger.info("Step 1: Entity Discovery")
+            entity_result = self.entity_discovery.run(
+                query=description,
+                context='dashboard'
+            )
+
+            if entity_result.success:
+                workflow_results['entity_discovery'] = entity_result.to_dict()
+                entities = [e['entity_id'] for e in entity_result.data.get('entities', [])]
+                all_recommendations.extend(entity_result.recommendations)
+
+        # Step 2: Dashboard Design
+        self.logger.info("Step 2: Dashboard Design")
+        design_result = self.dashboard_designer.run(
+            design_type='full_dashboard',
+            description=description,
+            entities=entities,
+            layout_type=layout_type
+        )
+
+        workflow_results['dashboard_design'] = design_result.to_dict()
+
+        if not design_result.success:
+            return AgentResult(
+                success=False,
+                agent_name=self.name,
+                message="Dashboard design failed",
+                data={'workflow_results': workflow_results},
+                errors=design_result.errors
+            )
+
+        dashboard = design_result.data.get('dashboard')
+        all_recommendations.extend(design_result.recommendations)
+
+        # Step 3: UX and Accessibility Review
+        self.logger.info("Step 3: UX and Accessibility Review")
+        ux_result = self.dashboard_best_practices.run(
+            review_type='full',
+            dashboard=dashboard
+        )
+
+        workflow_results['ux_review'] = ux_result.to_dict()
+        all_recommendations.extend(ux_result.recommendations)
+
+        # Consolidate results
+        return AgentResult(
+            success=True,
+            agent_name=self.name,
+            message=f"Dashboard designed with {len(dashboard.get('views', []))} views - Quality score: {ux_result.data.get('quality_score', 0)}/100",
+            data={
+                'dashboard': dashboard,
+                'workflow_results': workflow_results,
+                'quality_score': ux_result.data.get('quality_score', 0),
+                'view_count': len(dashboard.get('views', []))
+            },
+            recommendations=all_recommendations[:15],  # Top 15 recommendations
+            warnings=ux_result.warnings
+        )
+
+    def _workflow_review_dashboard(self, **kwargs) -> AgentResult:
+        """
+        Review existing dashboard for UX, accessibility, and best practices.
+
+        Args:
+            dashboard: Dashboard configuration to review
+            review_type: Type of review (full, ux, accessibility, design, performance)
+        """
+        dashboard = kwargs.get('dashboard')
+        review_type = kwargs.get('review_type', 'full')
+
+        if not dashboard:
+            return AgentResult(
+                success=False,
+                agent_name=self.name,
+                message="No dashboard provided for review",
+                errors=["Provide 'dashboard' parameter with dashboard configuration"]
+            )
+
+        self.logger.info(f"Reviewing dashboard: type={review_type}")
+
+        # Run review
+        review_result = self.dashboard_best_practices.run(
+            review_type=review_type,
+            dashboard=dashboard
+        )
+
+        if not review_result.success:
+            return review_result
+
+        # Add optimization suggestions from dashboard designer
+        if review_type == 'full':
+            optimize_result = self.dashboard_designer.run(
+                design_type='optimize',
+                existing_dashboard=dashboard
+            )
+
+            if optimize_result.success:
+                review_result.recommendations.extend(optimize_result.recommendations)
+
+        return AgentResult(
+            success=True,
+            agent_name=self.name,
+            message=f"Dashboard review complete - Quality score: {review_result.data.get('quality_score', 0)}/100",
+            data=review_result.data,
+            errors=review_result.errors,
+            warnings=review_result.warnings,
+            recommendations=review_result.recommendations[:15]  # Top 15
         )
 
     # ========== UTILITY METHODS ==========

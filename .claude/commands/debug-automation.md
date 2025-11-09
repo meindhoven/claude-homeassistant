@@ -85,24 +85,89 @@ The workflow performs these checks:
    - Required fields present?
    - Service names valid?
 
-2. **Entity Availability**
-   - Do all referenced entities exist?
-   - Are any entities disabled?
-   - What's the battery status?
-   - When did entity last update?
+2. **Entity Availability** (🔴 **USE MCP HERE**)
+   - Do all referenced entities exist? (check registry)
+   - Are any entities disabled? (check registry)
+   - **Are entities currently available?** (use MCP `homeassistant_get_states`)
+   - **What's the current battery status?** (use MCP to get live attributes)
+   - **When did entity last update?** (use MCP to get last_updated)
+   - **Are sensors actually responding?** (check if state != 'unavailable')
 
-3. **Trigger Testing**
+3. **Trigger Testing** (🔴 **USE MCP HERE**)
    - Will triggers actually fire?
-   - Are trigger entities responsive?
+   - **Are trigger entities responsive?** (use MCP to verify live state)
+   - **What's the current trigger state?** (check if automation would trigger now)
    - Is trigger logic sound?
 
-4. **Condition Testing**
+4. **Condition Testing** (🔴 **USE MCP HERE**)
    - Are conditions reachable?
    - Do condition entities exist?
+   - **Would conditions pass right now?** (use MCP to test current state)
 
-5. **Action Testing**
+5. **Action Testing** (🔴 **USE MCP HERE**)
    - Are target entities controllable?
-   - Are services available?
+   - **Are target entities currently available?** (use MCP)
+   - Are services available? (use MCP `homeassistant_get_services`)
+   - **Can we actually control them?** (check if entity supports the service)
+
+## Using MCP for Live Diagnostics
+
+**CRITICAL**: Always use MCP tools when debugging to check **current, live state**:
+
+```python
+# Check if trigger entity is responsive
+trigger_entity = "binary_sensor.home_kitchen_motion"
+state = homeassistant_get_states(entity_id=trigger_entity)
+
+if state['state'] == 'unavailable':
+    print(f"❌ PROBLEM: Trigger entity {trigger_entity} is OFFLINE")
+    print(f"   The automation cannot trigger because the sensor isn't responding")
+    print(f"   Action: Check sensor battery, connection, or device")
+else:
+    print(f"✅ Trigger entity is online")
+    print(f"   Current state: {state['state']}")
+    print(f"   Last updated: {state['last_updated']}")
+
+# Check battery level if available
+if 'battery_level' in state.get('attributes', {}):
+    battery = state['attributes']['battery_level']
+    if battery < 20:
+        print(f"⚠️  WARNING: Low battery ({battery}%) - entity may become unavailable soon")
+```
+
+```python
+# Test if action entity can be controlled
+action_entity = "light.home_kitchen_ceiling"
+state = homeassistant_get_states(entity_id=action_entity)
+
+if state['state'] == 'unavailable':
+    print(f"❌ PROBLEM: Action target {action_entity} is OFFLINE")
+    print(f"   The automation will fail to execute")
+else:
+    print(f"✅ Action target is available")
+
+    # Verify the service is available
+    services = homeassistant_get_services()
+    light_services = services.get('light', {})
+
+    if 'turn_on' in light_services:
+        print(f"✅ Service 'light.turn_on' is available")
+    else:
+        print(f"❌ Service 'light.turn_on' is NOT available")
+```
+
+```python
+# Test if automation would trigger RIGHT NOW
+current_state = homeassistant_get_states(entity_id=trigger_entity)
+trigger_to_state = 'on'  # from automation config
+
+if current_state['state'] == trigger_to_state:
+    print(f"🔔 Automation WOULD TRIGGER right now")
+    print(f"   {trigger_entity} is currently '{current_state['state']}'")
+else:
+    print(f"⏸️  Automation would NOT trigger right now")
+    print(f"   Current state: '{current_state['state']}' (needs '{trigger_to_state}')")
+```
 
 ## Common Issues & Solutions
 

@@ -1,10 +1,10 @@
 ---
-description: Search for entities by name, domain, area, or device class
+description: Search for entities by name, domain, area, or device class with live state information
 ---
 
 You are running the **Find Entities** workflow using the Home Assistant Agent System.
 
-Your task is to help the user discover and understand available entities.
+Your task is to help the user discover and understand available entities, including their **current live state** when MCP is available.
 
 ## Usage
 
@@ -17,7 +17,17 @@ The user can search for entities in various ways:
 /find-entities all lights in bedroom
 ```
 
-## Implementation
+## Implementation Approach
+
+**Use MCP for Live State (Preferred):**
+If MCP (hass-mcp) is available, use it to get current entity states alongside registry data:
+
+1. **Search entity registry** (file-based) for entity list
+2. **Query live states** via MCP `homeassistant_get_states` tool
+3. **Show both** registry info AND current state
+
+**Fallback to File-Based:**
+If MCP not available, use entity registry only.
 
 ```python
 from agents.orchestrator import OrchestratorAgent
@@ -40,20 +50,67 @@ result = orchestrator.run(
     workflow='find_entities',
     query=query,
     domain=domain,
-    area=area
+    area=area,
+    include_live_state=True  # Use MCP if available
 )
 
-# Present results
+# Present results with live state
 print(f"🔍 Found {result.data['count']} entities\n")
 
 for entity in result.data['entities'][:20]:  # Show top 20
     area_str = f" ({entity['area']})" if entity.get('area') else ""
     status = "❌ disabled" if entity.get('disabled') else "✅"
+
+    # Show entity info
     print(f"  {status} {entity['entity_id']}{area_str}")
     print(f"     {entity['name']}")
+
     if entity.get('device_class'):
         print(f"     Device class: {entity['device_class']}")
+
+    # Show LIVE STATE if available (from MCP)
+    if entity.get('current_state'):
+        state = entity['current_state']
+        print(f"     Current state: {state['state']}")
+
+        # Show relevant attributes
+        if 'battery_level' in state.get('attributes', {}):
+            battery = state['attributes']['battery_level']
+            battery_icon = '🔋' if battery > 20 else '🪫'
+            print(f"     {battery_icon} Battery: {battery}%")
+
+        if 'temperature' in state.get('attributes', {}):
+            temp = state['attributes']['temperature']
+            print(f"     🌡️  Temperature: {temp}°")
+
+        # Highlight issues
+        if state['state'] == 'unavailable':
+            print(f"     ⚠️  Entity unavailable (check device connection)")
+
+        last_updated = state.get('last_updated')
+        if last_updated:
+            print(f"     Last updated: {last_updated}")
+
     print()
+```
+
+## Using MCP Directly
+
+You can also use MCP tools directly for specific queries:
+
+```python
+# Get all entity states
+states = homeassistant_get_states()
+
+# Get specific entity
+state = homeassistant_get_states(entity_id="binary_sensor.home_kitchen_motion")
+
+# Check if entity is responsive
+if state['state'] != 'unavailable':
+    print(f"✅ Entity is online and responding")
+    print(f"Current state: {state['state']}")
+else:
+    print(f"❌ Entity is offline or unavailable")
 ```
 
 ## Search Patterns

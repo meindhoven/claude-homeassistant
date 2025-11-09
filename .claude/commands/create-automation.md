@@ -1,216 +1,140 @@
-# Create Home Assistant Automation
+---
+description: Create a new Home Assistant automation with guided workflow
+---
 
-Guide the user through creating a new Home Assistant automation with proper validation.
+You are running the **Create Automation** workflow using the Home Assistant Agent System.
 
-## Workflow:
+Your task is to help the user create a complete, tested, and documented automation.
 
-1. **Gather Requirements**: Ask the user to describe what they want to automate in plain English
-   - What triggers the automation?
-   - What conditions should be checked?
-   - What actions should happen?
+## Workflow Steps
 
-2. **Discover Entities**:
-   - Use `source venv/bin/activate && python tools/entity_explorer.py` to find available entities
-   - Search for relevant entities based on the user's description
-   - Ask user to confirm which specific entities to use (don't assume if multiple match)
-   - Follow the naming convention: `location_room_device_sensor`
+Execute the complete automation creation workflow by:
 
-3. **Draft Automation**: Create the YAML automation following HA best practices:
-   - Meaningful `id` and `alias`
-   - Clear trigger configuration
-   - Appropriate conditions (if needed)
-   - Well-structured actions
-   - Include comments explaining the logic
+1. **Understanding the Intent**: Ask the user to describe what they want the automation to do
+2. **Entity Discovery**: Help find the relevant entities needed (use `/find-entities`)
+3. **Live State Verification** (🔴 **USE MCP**): Verify entities are online and responding
+   - Check if entities are currently available (not 'unavailable')
+   - Verify battery levels for battery-powered sensors
+   - Confirm entities can be controlled (for action targets)
+4. **Design Automation**: Create the YAML configuration
+5. **Best Practices Review**: Check for security and performance issues
+6. **Validation**: Run all validation checks
+7. **Testing**: Simulate scenarios AND test with MCP if possible
+8. **Documentation**: Generate documentation
+9. **Save**: Write the automation to config/automations.yaml
 
-4. **Add to Configuration**:
-   - Add the automation to `config/automations.yaml`
-   - Use proper YAML formatting and indentation
+## Implementation
 
-5. **Validate**: Run validation to ensure:
-   - YAML syntax is correct
-   - All entity references exist
-   - Configuration is valid
+Use the Orchestrator Agent with the CREATE_AUTOMATION workflow:
 
-6. **Explain**: Describe what the automation does and when it will trigger
+```python
+from agents.orchestrator import OrchestratorAgent
+from agents.shared_context import SharedContext
 
-## Important:
+# Initialize
+context = SharedContext()
+orchestrator = OrchestratorAgent(context)
 
-- **Always explore entities first** - don't guess entity names
-- **Ask for clarification** if requirements are ambiguous
-- **Follow naming conventions** documented in CLAUDE.md
-- **Validate before completing** - never deliver unvalidated automations
-- **Be specific** - avoid using "entity.example" placeholders
+# Get user description
+description = "<user's automation description>"
 
-## Example Interaction:
+# Run workflow
+result = orchestrator.run(
+    workflow='create_automation',
+    description=description
+)
 
-User: "Turn off living room lights at 11pm on weekdays"
+# Present results
+print(result.message)
+print("\nAutomation created:")
+print(yaml.dump(result.data['automation']))
 
-You should:
-1. Search for living room light entities
-2. Confirm which lights the user wants to control
-3. Create automation with time trigger + weekday condition
-4. Add to config/automations.yaml
-5. Validate the configuration
-6. Explain when it will run
-
-## Multi-File Workflows
-
-Some automations require changes to multiple files. Handle these systematically:
-
-### Example 1: Automation with Helper Input
-
-**User Request:** "Create automation to adjust living room brightness based on time of day"
-
-**Multi-file changes needed:**
-
-1. **config/configuration.yaml** - Add input_number helper:
-```yaml
-input_number:
-  living_room_brightness_morning:
-    name: "Living Room Morning Brightness"
-    min: 0
-    max: 100
-    step: 5
-    unit_of_measurement: "%"
-  living_room_brightness_evening:
-    name: "Living Room Evening Brightness"
-    min: 0
-    max: 100
-    step: 5
-    unit_of_measurement: "%"
+if result.recommendations:
+    print("\n💡 Recommendations:")
+    for rec in result.recommendations:
+        print(f"  [{rec['priority']}] {rec['description']}")
 ```
 
-2. **config/automations.yaml** - Add automation using the helpers:
-```yaml
-- id: living_room_brightness_schedule
-  alias: "Living Room Brightness Schedule"
-  trigger:
-    - platform: time
-      at: "07:00:00"
-      id: morning
-    - platform: time
-      at: "18:00:00"
-      id: evening
-  action:
-    - service: light.turn_on
-      target:
-        entity_id: light.home_living_room_main
-      data:
-        brightness_pct: >
-          {% if trigger.id == 'morning' %}
-            {{ states('input_number.living_room_brightness_morning') | int }}
-          {% else %}
-            {{ states('input_number.living_room_brightness_evening') | int }}
-          {% endif %}
+## Key Points
+
+- Use the orchestrator to coordinate all agents
+- **USE MCP to verify entities before finalizing automation**
+- Present recommendations to the user
+- Ask for confirmation before writing to automations.yaml
+- Run validation hooks after writing
+
+## Live State Verification with MCP
+
+Before finalizing the automation, **always verify entities with MCP**:
+
+```python
+# After entity discovery, verify they're actually available
+entities_to_check = ['binary_sensor.home_kitchen_motion', 'light.home_kitchen_ceiling']
+
+print("\n🔍 Verifying entities are online...\n")
+
+for entity_id in entities_to_check:
+    state = homeassistant_get_states(entity_id=entity_id)
+
+    if state['state'] == 'unavailable':
+        print(f"⚠️  WARNING: {entity_id} is OFFLINE")
+        print(f"   This automation may not work until the device is back online")
+
+        # Check battery if available
+        if 'battery_level' in state.get('attributes', {}):
+            battery = state['attributes']['battery_level']
+            print(f"   Battery level: {battery}%")
+            if battery < 20:
+                print(f"   ⚠️  Low battery - replace soon!")
+    else:
+        print(f"✅ {entity_id} is online (state: {state['state']})")
+
+        # Show helpful info
+        if 'battery_level' in state.get('attributes', {}):
+            battery = state['attributes']['battery_level']
+            print(f"   Battery: {battery}%")
+
+        if 'last_updated' in state:
+            print(f"   Last updated: {state['last_updated']}")
 ```
 
-**Workflow:**
-1. Check if input_number is configured in configuration.yaml
-2. Add helper entities if needed
-3. Create automation referencing the helpers
-4. Validate both files changed
-5. Explain how to adjust brightness via UI
+## Testing Actions with MCP
 
-### Example 2: Automation with Reusable Script
+Before deploying, you can test if actions will work:
 
-**User Request:** "Turn off all lights and lock doors when everyone leaves"
+```python
+# Test if we can actually control the light
+test_entity = 'light.home_kitchen_ceiling'
 
-**Multi-file changes needed:**
+print(f"\n🧪 Testing if {test_entity} can be controlled...\n")
 
-1. **config/scripts.yaml** - Create reusable script:
-```yaml
-secure_home:
-  alias: "Secure Home"
-  sequence:
-    - service: light.turn_off
-      target:
-        entity_id: all
-    - service: lock.lock
-      target:
-        entity_id:
-          - lock.home_front_door
-          - lock.home_back_door
-    - service: notify.mobile_app
-      data:
-        message: "Home secured - all lights off, doors locked"
+# Get available services
+services = homeassistant_get_services()
+light_services = services.get('light', {})
+
+if 'turn_on' in light_services:
+    print(f"✅ Service 'light.turn_on' is available")
+
+    # Optionally, test calling it (ASK USER FIRST!)
+    user_consent = input("Test turn on the light now? (y/n): ")
+    if user_consent.lower() == 'y':
+        result = homeassistant_call_service(
+            domain='light',
+            service='turn_on',
+            target={'entity_id': test_entity},
+            service_data={'brightness_pct': 50}
+        )
+        print(f"✅ Successfully turned on {test_entity} to 50%")
+        print(f"   You can verify it's working, then turn it off manually")
+else:
+    print(f"❌ Service 'light.turn_on' is NOT available")
 ```
 
-2. **config/automations.yaml** - Add automation calling the script:
-```yaml
-- id: secure_on_departure
-  alias: "Secure Home When Everyone Leaves"
-  trigger:
-    - platform: state
-      entity_id: person.home
-      to: 'not_home'
-  condition:
-    - condition: state
-      entity_id: person.office
-      state: 'not_home'
-  action:
-    - service: script.secure_home
-```
+## User Interaction
 
-**Workflow:**
-1. Create reusable script in scripts.yaml
-2. Create automation that calls the script
-3. Validate both files
-4. Explain script can be reused by other automations or manually triggered
-
-### Example 3: Automation with Notification Configuration
-
-**User Request:** "Notify me when garage door is left open for 10 minutes"
-
-**Multi-file changes needed:**
-
-1. **config/automations.yaml** - Add automation:
-```yaml
-- id: garage_door_open_alert
-  alias: "Garage Door Left Open Alert"
-  trigger:
-    - platform: state
-      entity_id: binary_sensor.home_garage_door
-      to: 'on'
-      for:
-        minutes: 10
-  action:
-    - service: notify.mobile_app_iphone
-      data:
-        title: "Garage Door Alert"
-        message: "Garage door has been open for 10 minutes"
-        data:
-          tag: "garage-door-alert"
-          actions:
-            - action: "CLOSE_GARAGE"
-              title: "Close Garage Door"
-```
-
-2. **config/automations.yaml** - Add action handler (separate automation):
-```yaml
-- id: garage_door_notification_action
-  alias: "Handle Garage Door Notification Action"
-  trigger:
-    - platform: event
-      event_type: mobile_app_notification_action
-      event_data:
-        action: 'CLOSE_GARAGE'
-  action:
-    - service: cover.close_cover
-      target:
-        entity_id: cover.home_garage_door
-```
-
-**Workflow:**
-1. Create alert automation with actionable notification
-2. Create action handler automation
-3. Validate configuration
-4. Explain both automations work together
-
-## Best Practices for Multi-File Changes:
-
-1. **Plan First**: Identify all files that need changes before editing
-2. **Edit Sequentially**: Make changes to files in logical order
-3. **Validate After Each File**: Catch errors early
-4. **Test Relationships**: Verify cross-file references work
-5. **Commit Together**: All related changes in one commit
-6. **Document Dependencies**: Explain which files depend on each other
+Be interactive! Ask clarifying questions:
+- Which specific entities should be used?
+- What conditions should limit when it runs?
+- Should there be a timeout or auto-off?
+- What name/alias should it have?
+- **Would you like me to verify entities are online before creating?** (use MCP)

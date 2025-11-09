@@ -84,6 +84,20 @@ def test_imports():
         print(f"✗ Failed to import Orchestrator Agent: {e}")
         return False
 
+    try:
+        from agents.creation.dashboard_designer import DashboardDesignerAgent
+        print("✓ Dashboard Designer Agent imported")
+    except ImportError as e:
+        print(f"✗ Failed to import Dashboard Designer Agent: {e}")
+        return False
+
+    try:
+        from agents.analysis.dashboard_best_practices import DashboardBestPracticesAgent
+        print("✓ Dashboard Best Practices Agent imported")
+    except ImportError as e:
+        print(f"✗ Failed to import Dashboard Best Practices Agent: {e}")
+        return False
+
     return True
 
 
@@ -145,6 +159,48 @@ def test_agent_properties():
         return False
 
 
+def test_dashboard_agents():
+    """Test dashboard agent functionality"""
+    print("\nTesting dashboard agents...")
+
+    try:
+        from agents.shared_context import SharedContext
+        from agents.creation.dashboard_designer import DashboardDesignerAgent
+        from agents.analysis.dashboard_best_practices import DashboardBestPracticesAgent
+
+        context = SharedContext()
+
+        # Test Dashboard Designer
+        designer = DashboardDesignerAgent(context)
+        print(f"✓ Dashboard Designer: {designer.name}")
+        print(f"  Capabilities: {', '.join(designer.capabilities)}")
+
+        # Test Dashboard Best Practices
+        reviewer = DashboardBestPracticesAgent(context)
+        print(f"✓ Dashboard Best Practices: {reviewer.name}")
+        print(f"  Capabilities: {', '.join(reviewer.capabilities)}")
+
+        # Test basic dashboard design
+        print("\n  Testing basic dashboard design...")
+        result = designer.run(
+            design_type='suggest_cards',
+            entities=['light.test_light', 'sensor.test_temperature']
+        )
+        if result.success:
+            print(f"  ✓ Card suggestions generated for {result.data.get('entity_count', 0)} entities")
+        else:
+            print(f"  ✗ Card suggestion failed: {result.message}")
+            return False
+
+        return True
+
+    except Exception as e:
+        print(f"✗ Dashboard agent test failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
 def main():
     """Run all smoke tests"""
     print("=" * 60)
@@ -162,6 +218,9 @@ def main():
 
     # Test properties
     results.append(("Properties", test_agent_properties()))
+
+    # Test dashboard agents
+    results.append(("Dashboard Agents", test_dashboard_agents()))
 
     # Summary
     print("\n" + "=" * 60)
