@@ -218,7 +218,7 @@ xcode-select --install  # Installs Command Line Tools including make
 │   ├── reference_validator.py # Entity reference validation
 │   ├── ha_official_validator.py # Official HA validation
 │   └── entity_explorer.py # Entity discovery tool
-├── .claude-code/        # Claude Code project settings
+├── .claude/        # Claude Code project settings
 │   ├── commands/        # Slash commands for agents (NEW!)
 │   │   ├── create-automation.md
 │   │   ├── review-automations.md
@@ -444,7 +444,7 @@ Claude automatically loads relevant documentation when working in specific direc
 
 - **`tools/CLAUDE.md`** - Validator development guide (TDD, patterns, debugging)
 - **`config/CLAUDE.md`** - HA configuration best practices (syntax, patterns, examples)
-- **`.claude-code/hooks/CLAUDE.md`** - Hook development guide (patterns, testing)
+- **`.claude/hooks/CLAUDE.md`** - Hook development guide (patterns, testing)
 
 ### Entity Naming Convention
 
@@ -563,13 +563,13 @@ TOOLS_PATH=tools                        # Tools directory
 ```
 
 ### Claude Code Settings
-Located in `.claude-code/settings.json`:
+Located in `.claude/settings.json`:
 ```json
 {
   "hooks": {
     "enabled": true,
-    "posttooluse": [".claude-code/hooks/posttooluse-ha-validation.sh"],
-    "pretooluse": [".claude-code/hooks/pretooluse-ha-push-validation.sh"]
+    "posttooluse": [".claude/hooks/posttooluse-ha-validation.sh"],
+    "pretooluse": [".claude/hooks/pretooluse-ha-push-validation.sh"]
   },
   "validation": {
     "enabled": true,
@@ -640,7 +640,7 @@ This project implements Anthropic's recommended best practices. See `CLAUDE.md` 
 - **`CLAUDE.md`** - Complete Claude Code guide (workflows, MCP, best practices)
 - **`tools/CLAUDE.md`** - Validator development guide
 - **`config/CLAUDE.md`** - HA configuration reference
-- **`.claude-code/hooks/CLAUDE.md`** - Hook development guide
+- **`.claude/hooks/CLAUDE.md`** - Hook development guide
 
 ## 🙏 Acknowledgments
 
@@ -664,7 +664,7 @@ This project implements Anthropic's recommended best practices. See `CLAUDE.md` 
 
 - **[Agent System Guide](docs/AGENT_SYSTEM_GUIDE.md)** - Comprehensive user guide with examples
 - **[CLAUDE.md](CLAUDE.md)** - Complete project instructions and agent documentation
-- **[Slash Command Guides](.claude-code/commands/)** - Detailed usage for each command
+- **[Slash Command Guides](.claude/commands/)** - Detailed usage for each command
 
 ---
 

@@ -130,7 +130,7 @@ format-yaml:
 		for file in $(FILES); do \
 			if [ -f "$$file" ]; then \
 				echo "Formatting: $$file"; \
-				.claude-code/hooks/yaml-formatter.sh "$$file"; \
+				.claude/hooks/yaml-formatter.sh "$$file"; \
 			else \
 				echo "$(YELLOW)Warning: File not found: $$file$(NC)"; \
 			fi; \
@@ -140,7 +140,7 @@ format-yaml:
 		for file in $$(find $(LOCAL_CONFIG_PATH) -name "*.yaml" -o -name "*.yml"); do \
 			if [ -f "$$file" ]; then \
 				echo "Formatting: $$file"; \
-				.claude-code/hooks/yaml-formatter.sh "$$file"; \
+				.claude/hooks/yaml-formatter.sh "$$file"; \
 			fi; \
 		done; \
 	fi

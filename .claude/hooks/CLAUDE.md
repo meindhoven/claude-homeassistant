@@ -84,7 +84,7 @@ They enable automatic validation, formatting, and quality checks.
 
 **1. Executable permissions**:
 ```bash
-chmod +x .claude-code/hooks/your-hook.sh
+chmod +x .claude/hooks/your-hook.sh
 ```
 
 **2. Shebang line**:
@@ -237,7 +237,7 @@ fi
 cd /path/to/project
 export CLAUDE_TOOL_NAME="Edit"
 export CLAUDE_TOOL_ARGS="config/automations.yaml"
-.claude-code/hooks/posttooluse-ha-validation.sh
+.claude/hooks/posttooluse-ha-validation.sh
 ```
 
 ### Debug Mode
@@ -254,19 +254,19 @@ echo "DEBUG: Tool=$CLAUDE_TOOL_NAME Args=$CLAUDE_TOOL_ARGS"
 
 ## Hook Configuration
 
-Hooks are configured in `.claude-code/settings.json`:
+Hooks are configured in `.claude/settings.json`:
 
 ```json
 {
   "hooks": {
     "enabled": true,
     "posttooluse": [
-      ".claude-code/hooks/yaml-formatter.sh",
-      ".claude-code/hooks/posttooluse-ha-validation.sh",
-      ".claude-code/hooks/posttooluse-python-quality.sh"
+      ".claude/hooks/yaml-formatter.sh",
+      ".claude/hooks/posttooluse-ha-validation.sh",
+      ".claude/hooks/posttooluse-python-quality.sh"
     ],
     "pretooluse": [
-      ".claude-code/hooks/pretooluse-ha-push-validation.sh"
+      ".claude/hooks/pretooluse-ha-push-validation.sh"
     ]
   }
 }
@@ -291,8 +291,8 @@ Or comment out specific hooks:
 {
   "hooks": {
     "posttooluse": [
-      // ".claude-code/hooks/expensive-hook.sh",  // Disabled
-      ".claude-code/hooks/quick-hook.sh"          // Active
+      // ".claude/hooks/expensive-hook.sh",  // Disabled
+      ".claude/hooks/quick-hook.sh"          // Active
     ]
   }
 }
@@ -347,9 +347,9 @@ fi
 
 ### Hook Not Running
 1. Check `settings.json` - is hook listed and enabled?
-2. Check file permissions: `ls -la .claude-code/hooks/`
-3. Check shebang: `head -1 .claude-code/hooks/your-hook.sh`
-4. Check for syntax errors: `bash -n .claude-code/hooks/your-hook.sh`
+2. Check file permissions: `ls -la .claude/hooks/`
+3. Check shebang: `head -1 .claude/hooks/your-hook.sh`
+4. Check for syntax errors: `bash -n .claude/hooks/your-hook.sh`
 
 ### Hook Running Too Often
 Add conditions to make it more selective:
@@ -410,9 +410,9 @@ fi
 ```bash
 #!/bin/bash
 # Call another hook
-.claude-code/hooks/format-code.sh
+.claude/hooks/format-code.sh
 if [ $? -eq 0 ]; then
-    .claude-code/hooks/validate-code.sh
+    .claude/hooks/validate-code.sh
 fi
 ```
 

@@ -3,7 +3,7 @@
 # Manual Python Quality Check Runner
 # Forces a full run of all Python development tools regardless of file changes
 #
-# Usage: ./.claude-code/hooks/run-python-quality.sh [--force-all]
+# Usage: ./.claude/hooks/run-python-quality.sh [--force-all]
 
 set -e
 
@@ -19,7 +19,7 @@ echo -e "${BLUE}🚀 Running Full Python Quality Check Suite${NC}"
 export FORCE_PYTHON_CHECKS=true
 
 # Run the post-tool-use hook
-./.claude-code/hooks/posttooluse-python-quality.sh
+./.claude/hooks/posttooluse-python-quality.sh
 
 echo -e "${GREEN}✅ Full Python quality check completed!${NC}"
 echo -e "${YELLOW}💡 Tip: Use 'make -f Makefile.dev dev-workflow' for development workflow${NC}"
