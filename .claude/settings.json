@@ -45,6 +45,15 @@
       ],
       "project_specific": [
         "Skill"
+      ],
+      "mcp": [
+        "mcp__homeassistant__get_entity",
+        "mcp__homeassistant__get_entities",
+        "mcp__homeassistant__call_service",
+        "mcp__homeassistant__get_states",
+        "mcp__homeassistant__list_entities",
+        "mcp__homeassistant__list_services",
+        "mcp__homeassistant__get_config"
       ]
     },
     "guidance": {

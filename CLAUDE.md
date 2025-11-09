@@ -901,6 +901,15 @@ These tools are configured in `.claude/settings.json` and don't require explicit
 - **NotebookEdit** - Edit Jupyter notebooks
 - **Skill** - Execute project-specific skills
 
+#### MCP (Model Context Protocol)
+- **mcp__homeassistant__get_entity** - Query single entity state
+- **mcp__homeassistant__get_entities** - Query multiple entity states
+- **mcp__homeassistant__call_service** - Call Home Assistant services
+- **mcp__homeassistant__get_states** - Get all entity states
+- **mcp__homeassistant__list_entities** - List available entities
+- **mcp__homeassistant__list_services** - List available services
+- **mcp__homeassistant__get_config** - Get Home Assistant configuration
+
 ### Project-Specific Tool Guidance
 
 Based on this project's needs, Claude follows these tool usage patterns:
