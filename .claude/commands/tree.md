@@ -21,7 +21,7 @@ Provide a brief explanation of the key directories and their purposes:
 - **tools/** - Validation and testing scripts (Python)
 - **agents/** - Multi-agent system for automation development
 - **docs/** - Comprehensive documentation
-- **.claude-code/** - Claude Code settings, commands, and hooks
+- **.claude/** - Claude Code settings, commands, and hooks
 - **venv/** - Python virtual environment (excluded from tree)
 - **temp/** - Temporary directory for testing (if exists)
 
@@ -45,10 +45,10 @@ Provide a brief explanation of the key directories and their purposes:
 - **CLAUDE.md** (root) - Main Claude Code guidance with cross-references
 - **config/CLAUDE.md** - HA configuration guidelines
 - **tools/CLAUDE.md** - Validator development with TDD
-- **.claude-code/hooks/CLAUDE.md** - Hook patterns and testing
+- **.claude/hooks/CLAUDE.md** - Hook patterns and testing
 - **docs/AGENT_SYSTEM_GUIDE.md** - Complete agent system documentation
 
-### Claude Code Configuration (.claude-code/)
+### Claude Code Configuration (.claude/)
 - **commands/** - Custom slash commands
 - **hooks/** - Validation hooks (pre/post tool use)
 - **settings.json** - Project configuration and tool allowlist

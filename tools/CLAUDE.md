@@ -281,7 +281,7 @@ python entity_explorer.py --search "binary_sensor.home_basement_motion"
 
 These tools integrate with Claude Code via:
 
-1. **Hooks**: `.claude-code/hooks/posttooluse-ha-validation.sh` runs after edits
+1. **Hooks**: `.claude/hooks/posttooluse-ha-validation.sh` runs after edits
 2. **Slash Commands**: `/validate-config` runs full suite
 3. **Make Commands**: `make validate` from project root
 

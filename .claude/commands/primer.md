@@ -23,7 +23,7 @@ Read the following files in order to establish foundational context:
 3. **docs/AGENT_SYSTEM_GUIDE.md** - Complete agent system documentation
 4. **config/CLAUDE.md** - Home Assistant configuration guidelines
 5. **tools/CLAUDE.md** - Validation tool development
-6. **.claude-code/hooks/CLAUDE.md** - Hook patterns and testing
+6. **.claude/hooks/CLAUDE.md** - Hook patterns and testing
 
 ### 3. Entity Registry Analysis
 Read **config/.storage/core.entity_registry** to understand:

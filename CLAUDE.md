@@ -8,7 +8,7 @@ This file contains **Claude Code-specific guidance** for working on this project
 
 - **Home Assistant Configuration**: See [config/CLAUDE.md](config/CLAUDE.md) for HA config guidelines, automation examples, and entity naming conventions
 - **Validation Tool Development**: See [tools/CLAUDE.md](tools/CLAUDE.md) for developing validators with TDD
-- **Hook Development**: See [.claude-code/hooks/CLAUDE.md](.claude-code/hooks/CLAUDE.md) for hook patterns and testing
+- **Hook Development**: See [.claude/hooks/CLAUDE.md](.claude/hooks/CLAUDE.md) for hook patterns and testing
 - **Agent System**: See [docs/AGENT_SYSTEM_GUIDE.md](docs/AGENT_SYSTEM_GUIDE.md) for complete agent documentation
 - **General Overview**: See [README.md](README.md) for quick start and project overview
 
@@ -874,7 +874,7 @@ Claude Code uses various tools to interact with your codebase. This project has 
 
 ### Pre-Approved Tools
 
-These tools are configured in `.claude-code/settings.json` and don't require explicit approval:
+These tools are configured in `.claude/settings.json` and don't require explicit approval:
 
 #### File Operations
 - **Read** - Read files to understand codebase
@@ -967,24 +967,24 @@ Based on this project's needs, Claude follows these tool usage patterns:
 
 While tools are pre-approved, **validation hooks ensure safety**:
 
-1. **Post-Edit Validation** (`.claude-code/hooks/posttooluse-ha-validation.sh`)
+1. **Post-Edit Validation** (`.claude/hooks/posttooluse-ha-validation.sh`)
    - Runs after YAML edits in `config/`
    - Validates syntax, entities, and HA config
    - Non-blocking - warns but allows work to continue
 
-2. **Pre-Push Validation** (`.claude-code/hooks/pretooluse-ha-push-validation.sh`)
+2. **Pre-Push Validation** (`.claude/hooks/pretooluse-ha-push-validation.sh`)
    - Runs before `make push` or deployment
    - **Blocking** - prevents invalid configs from reaching HA
    - Ensures only validated configs are deployed
 
-3. **Python Quality Checks** (`.claude-code/hooks/posttooluse-python-quality.sh`)
+3. **Python Quality Checks** (`.claude/hooks/posttooluse-python-quality.sh`)
    - Runs after Python file edits
    - Auto-formats with Black and isort
    - Runs linting and type checking
 
 **Result**: Fast development + Safe deployments
 
-**More Details**: See [.claude-code/hooks/CLAUDE.md](.claude-code/hooks/CLAUDE.md) for complete hook documentation
+**More Details**: See [.claude/hooks/CLAUDE.md](.claude/hooks/CLAUDE.md) for complete hook documentation
 
 ## 🤖 Multi-Agent Development System
 
@@ -1058,7 +1058,7 @@ Use slash commands for guided workflows:
 - `temp/` - Temporary directory for Claude to write and test code before moving to final locations
 - `Makefile` - Commands for pulling/pushing configuration
 - `.mcp.json` - Model Context Protocol server configuration
-- `.claude-code/` - Project-specific Claude Code settings and hooks
+- `.claude/` - Project-specific Claude Code settings and hooks
   - `commands/` - Custom slash commands
   - `hooks/` - Validation hooks that run automatically
   - `settings.json` - Project configuration
@@ -1077,7 +1077,7 @@ This project includes comprehensive validation to prevent invalid configurations
 - **Pre-Push Hook**: Validates configuration before pushing to Home Assistant
 - **Blocks invalid pushes**: Prevents uploading broken configurations
 
-**More Details**: See [.claude-code/hooks/CLAUDE.md](.claude-code/hooks/CLAUDE.md)
+**More Details**: See [.claude/hooks/CLAUDE.md](.claude/hooks/CLAUDE.md)
 
 ## Entity Registry
 
