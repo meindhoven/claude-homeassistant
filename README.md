@@ -25,9 +25,9 @@ Click to play
 - **Automated Hooks**: Validation runs automatically on file changes
 - **Entity Registry Integration**: Real-time validation against your actual HA setup
 ### Claude Code Integration (Enhanced)
-- **⚡ Custom Slash Commands**: 10 workflow commands for common tasks (`/validate-config`, `/create-automation`, `/safe-deploy`)
-- **🤖 AI-Powered Automation Creation**: Write automations in plain English with guided entity discovery
-- **📚 Comprehensive Documentation**: Best practices, workflow patterns, and context-specific guides
+- **⚡ Custom Slash Commands**: 14 workflow commands including `/primer`, `/create-automation`, `/create-automation-prp`, `/safe-deploy`
+- **🤖 AI-Powered Automation Creation**: Write automations in plain English with guided entity discovery and PRP framework
+- **📚 Comprehensive Documentation**: Best practices, workflow patterns, code quality standards, and context-specific guides
 - **🔌 MCP Server Support**: Optional direct Home Assistant API integration for real-time queries
 - **📖 Multi-Level Documentation**: Context-specific CLAUDE.md files in tools/, config/, and hooks/
 
@@ -98,6 +98,7 @@ make pull  # Downloads YOUR actual HA config, overwriting template files
 **Important**: This step replaces the template `config/` folder with your real Home Assistant configuration files.
 
 #### 4. Work with Your Configuration
+- **Start Claude Code session with `/primer`** - Primes Claude with comprehensive repository context
 - Edit your real configs locally with full validation
 - Use Claude Code to create automations in natural language
 - Validation hooks automatically check syntax and entity references
@@ -341,8 +342,13 @@ This project implements [Anthropic's Claude Code best practices](https://www.ant
 Use natural language commands for common workflows:
 
 ```bash
+# Getting Started
+/primer               # Comprehensive repository analysis (recommended for new sessions)
+/tree                 # Visualize repository structure
+
 # AI-Powered Workflows (Agent System)
 /create-automation    # Guided automation creation with entity discovery, validation, and testing
+/create-automation-prp  # Advanced PRP framework for complex automations (one-pass implementation)
 /find-entities        # Natural language entity search ("motion sensors in kitchen")
 /review-automations   # Comprehensive analysis of all automations
 /debug-automation     # Systematic debugging with specific fix suggestions
