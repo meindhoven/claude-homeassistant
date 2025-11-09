@@ -535,99 +535,99 @@ See **CLAUDE.local.md.template** for a complete example with:
 - ✅ **State inspection**: Debug automations with live state data
 - ✅ **Direct API access**: Full Home Assistant API available to Claude
 
-### Available Options
+### MCP Server Implementation
 
-#### Option 1: Official Home Assistant MCP (HA 2025.2+)
+This project uses **hass-mcp** (`voska/hass-mcp`), a community MCP server implementation that provides:
 
-Home Assistant 2025.2+ includes built-in MCP server support:
-- Exposed at `/api/mcp` endpoint
-- OAuth authentication support
-- Access control via exposed entities page
-- Full Assist API integration
+- ✅ **Full Home Assistant API access** via standard REST API
+- ✅ **Entity state queries** and service calls
+- ✅ **Simple configuration** with minimal dependencies
+- ✅ **Easy installation** via `uvx` (no Docker required)
+- ✅ **Active development** and community support
 
-**Setup:**
-1. Ensure Home Assistant 2025.2 or later
-2. Enable "Model Context Protocol Server" integration
-3. Configure exposed entities for Claude access
-4. Use your HA URL + `/api/mcp` as endpoint
+**Why hass-mcp:**
+- Works with any Home Assistant version (no need for HA 2025.2+)
+- Lightweight and fast
+- Uses standard Home Assistant API (compatible with all HA installations)
+- Simple environment variable configuration
 
-#### Option 2: Community MCP Servers
-
-Several community implementations available:
-
-**allenporter/mcp-server-home-assistant** (Recommended)
-- Full WebSocket API support
-- Entity state queries and service calls
-- Active development and maintenance
-- Install: `uvx mcp-server-home-assistant`
-
-**Other options:**
-- `tevonsb/homeassistant-mcp` - Alternative implementation
-- `voska/hass-mcp` - Docker-focused approach
+**Alternative Options:**
+- `allenporter/mcp-server-home-assistant` - WebSocket-based implementation
+- `tevonsb/homeassistant-mcp` - Alternative REST implementation
+- Built-in HA MCP (requires HA 2025.2+) - Native integration via `/api/mcp`
 
 ### Configuration
 
-The `.mcp.json` file in the project root provides two pre-configured servers (both disabled by default):
+The `.mcp.json` file in the project root contains the MCP server configuration:
 
 ```json
 {
   "mcpServers": {
     "homeassistant": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-homeassistant"],
-      "env": {
-        "HOME_ASSISTANT_URL": "${HA_URL}",
-        "HOME_ASSISTANT_TOKEN": "${HA_TOKEN}"
-      },
-      "disabled": true
-    },
-    "homeassistant-community": {
       "command": "uvx",
-      "args": ["mcp-server-home-assistant", "-v"],
+      "args": ["hass-mcp"],
       "env": {
-        "HOME_ASSISTANT_WEB_SOCKET_URL": "${HA_URL}/api/websocket",
-        "HOME_ASSISTANT_API_TOKEN": "${HA_TOKEN}"
+        "HA_URL": "${HA_URL}",
+        "HA_TOKEN": "${HA_TOKEN}"
       },
-      "disabled": true
+      "disabled": false
     }
   }
 }
 ```
 
+**Configuration Details:**
+- `command: "uvx"` - Uses uvx to run the hass-mcp package (auto-installs if needed)
+- `args: ["hass-mcp"]` - The MCP server package name
+- `HA_URL` - Your Home Assistant URL (from `.env` file)
+- `HA_TOKEN` - Your Home Assistant long-lived access token (from `.env` file)
+- `disabled: false` - MCP server is enabled by default
+
 ### Setup Instructions
 
-1. **Ensure Prerequisites:**
+1. **Install uvx (if not already installed):**
    ```bash
-   # For npx-based server (Option 1):
-   npm --version  # Requires Node.js
+   # Using pip:
+   pip install uv
 
-   # For uvx-based server (Option 2):
-   pip install uv  # Or: curl -LsSf https://astral.sh/uv/install.sh | sh
+   # Or using the official installer:
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+
+   # Verify installation:
+   uvx --version
    ```
 
-2. **Configure Environment:**
-   Your `.env` file already contains the required variables:
+2. **Configure Environment Variables:**
+   Ensure your `.env` file contains the required variables:
    ```bash
    HA_TOKEN=your_home_assistant_long_lived_access_token
    HA_URL=http://your_homeassistant_host:8123
    ```
 
-3. **Generate Token (if not done):**
-   - Go to Home Assistant → Profile → Security
-   - Scroll to "Long-Lived Access Tokens"
+3. **Generate Long-Lived Access Token (if not done):**
+   - Open Home Assistant web interface
+   - Navigate to: Profile → Security (bottom left corner → your profile)
+   - Scroll to "Long-Lived Access Tokens" section
    - Click "Create Token"
-   - Copy token to `.env` file as `HA_TOKEN`
+   - Give it a name (e.g., "Claude MCP")
+   - Copy the token immediately (you can't view it again!)
+   - Add to `.env` file as `HA_TOKEN=<your_token>`
 
-4. **Enable MCP Server:**
-   Edit `.mcp.json` and change `"disabled": true` to `"disabled": false` for your chosen server.
+4. **Verify Configuration:**
+   The MCP server is already configured and enabled in `.mcp.json`. No changes needed unless you want to disable it.
 
 5. **Restart Claude Code:**
-   Close and reopen Claude Code for MCP configuration to take effect.
+   Close and reopen Claude Code to load the MCP configuration.
 
-6. **Verify Connection:**
+6. **Test the Connection:**
    Ask Claude to query an entity:
    ```
    "What's the current state of my living room lights?"
+   ```
+
+   Or verify connectivity:
+   ```
+   "List all my climate entities"
    ```
 
 ### Usage Examples
@@ -684,10 +684,11 @@ Claude: [Checks entity states via MCP]
 - For official integration, check exposed entities settings
 - Token must be "Long-Lived Access Token" not temporary
 
-**Command not found:**
-- For `npx`: Install Node.js from nodejs.org
-- For `uvx`: Install uv via `pip install uv`
-- Verify command in terminal before enabling in `.mcp.json`
+**Command not found (uvx):**
+- Install uv: `pip install uv` or use the official installer
+- Verify installation: `uvx --version`
+- Ensure uv is in your PATH
+- Try manual installation: `uv tool install hass-mcp`
 
 ### Security Notes
 

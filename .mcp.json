@@ -1,30 +1,15 @@
 {
   "mcpServers": {
     "homeassistant": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-homeassistant"
-      ],
-      "env": {
-        "HOME_ASSISTANT_URL": "${HA_URL}",
-        "HOME_ASSISTANT_TOKEN": "${HA_TOKEN}"
-      },
-      "disabled": true
-    },
-    "homeassistant-community": {
       "command": "uvx",
-      "args": [
-        "mcp-server-home-assistant",
-        "-v"
-      ],
+      "args": ["hass-mcp"],
       "env": {
-        "HOME_ASSISTANT_WEB_SOCKET_URL": "${HA_URL}/api/websocket",
-        "HOME_ASSISTANT_API_TOKEN": "${HA_TOKEN}"
+        "HA_URL": "${HA_URL}",
+        "HA_TOKEN": "${HA_TOKEN}"
       },
-      "disabled": true
+      "disabled": false
     }
   },
-  "_comment": "MCP servers are disabled by default. Enable one by setting 'disabled: false' after setup.",
+  "_comment": "MCP server using hass-mcp package via uvx.",
   "_instructions": "See CLAUDE.md section 'MCP Server Configuration' for setup instructions."
 }
