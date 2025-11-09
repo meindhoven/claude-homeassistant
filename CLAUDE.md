@@ -761,6 +761,15 @@ These tools are configured in `.claude-code/settings.json` and don't require exp
 - **NotebookEdit** - Edit Jupyter notebooks
 - **Skill** - Execute project-specific skills
 
+#### MCP (Model Context Protocol)
+- **mcp__homeassistant__get_entity** - Query single entity state
+- **mcp__homeassistant__get_entities** - Query multiple entity states
+- **mcp__homeassistant__call_service** - Call Home Assistant services
+- **mcp__homeassistant__get_states** - Get all entity states
+- **mcp__homeassistant__list_entities** - List available entities
+- **mcp__homeassistant__list_services** - List available services
+- **mcp__homeassistant__get_config** - Get Home Assistant configuration
+
 ### Project-Specific Tool Guidance
 
 Based on this project's needs, Claude follows these tool usage patterns:
@@ -799,6 +808,19 @@ Based on this project's needs, Claude follows these tool usage patterns:
 ❌ Don't guess entity names
 ❌ Don't assume services exist
 ❌ Don't skip entity discovery phase
+```
+
+#### MCP Best Practices
+```markdown
+✅ Use MCP to query live entity states
+✅ Verify entity existence against running HA instance
+✅ Test service calls before adding to automations
+✅ Use get_entities for batch queries
+✅ Check entity states when debugging automations
+
+❌ Don't rely solely on config files for entity info
+❌ Don't call services that modify state without asking
+❌ Don't assume MCP is available (check .env configured)
 ```
 
 ### Safety Through Hooks
