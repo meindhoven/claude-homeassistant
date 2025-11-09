@@ -1,51 +1,1548 @@
-# Example Home Assistant Automations
-# These are example automations showcasing common patterns
-
-- id: 'example_motion_lights'
-  alias: 'Example: Motion Activated Lights'
-  description: 'Turn on lights when motion is detected'
-  trigger:
-    - platform: state
-      entity_id: binary_sensor.living_room_motion
-      to: 'on'
-  condition:
+- id: '1714316060551'
+  alias: Deurbel beneden
+  description: ''
+  triggers:
+  - type: turned_on
+    device_id: dd17ff89b17a6156bb130ff364d16d67
+    entity_id: 4eb2bafc7fb052f5cc87666b6c9435c7
+    domain: binary_sensor
+    trigger: device
+  conditions: []
+  actions:
+  - metadata: {}
+    data:
+      volume_level: 0.5
+    target:
+      device_id:
+      - 0b8178c6ef25e9510cb02c223a87a6e2
+      - fb51ca2046faf0390f0f5f98d8a3aba1
+      - 110c7379df54bac6d0af123532cdba53
+    action: media_player.volume_set
+  - target:
+      entity_id:
+      - media_player.sonos_woonkamer
+      - media_player.kantoor_2
+      - media_player.kamer_mats
+    data:
+      media_content_id: media-source://media_source/local/doorbell-2.mp3
+      media_content_type: audio/mpeg
+      announce: true
+    metadata:
+      title: doorbell-2.mp3
+      thumbnail:
+      media_class: music
+      children_media_class:
+      navigateIds:
+      - {}
+      - media_content_type: app
+        media_content_id: media-source://media_source
+    action: media_player.play_media
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 15
+      milliseconds: 0
+  - metadata: {}
+    data:
+      volume_level: 0.2
+    target:
+      device_id:
+      - 0b8178c6ef25e9510cb02c223a87a6e2
+      - fb51ca2046faf0390f0f5f98d8a3aba1
+      - 110c7379df54bac6d0af123532cdba53
+    action: media_player.volume_set
+  mode: single
+- id: '1732034517191'
+  alias: Office Heating v3 (Helper-Based)
+  description: Controls office heating using binary sensor helpers for schedule, presence,
+    and temperature logic. Valve management synchronized with woonkamer heating.
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.office_should_heat
+    id: heating_decision_changed
+  - trigger: state
+    entity_id: sensor.is_woonkamer_heating
+    id: woonkamer_heating_changed
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.office_should_heat
+        state: 'on'
+      sequence:
+      - action: climate.set_temperature
+        data:
+          temperature: 20
+          hvac_mode: heat
+        target:
+          entity_id: climate.kantoor_2
+      - if:
+        - condition: state
+          entity_id: sensor.is_woonkamer_heating
+          state: 'True'
+        then:
+        - action: switch.turn_on
+          target:
+            entity_id: switch.sonoff_1002484485_1
+          data: {}
+        else:
+        - action: switch.turn_off
+          target:
+            entity_id: switch.sonoff_1002484485_1
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.office_should_heat
+        state: 'off'
+      sequence:
+      - action: climate.set_hvac_mode
+        data:
+          hvac_mode: 'off'
+        target:
+          entity_id: climate.kantoor_2
+      - action: switch.turn_on
+        target:
+          entity_id: switch.sonoff_1002484485_1
+        data: {}
+  mode: restart
+- id: '1732377162710'
+  alias: Tado SmartIQ Gas Consumption
+  description: ''
+  triggers:
+  - trigger: time
+    at: '23:59:00'
+  conditions: []
+  actions:
+  - action: tado.add_meter_reading
+    metadata: {}
+    data:
+      config_entry: d4682231bab019b2a239f806691c47c5
+      reading: '{{ states(''sensor.gas_consumed'')|int }}'
+  mode: single
+- id: '1732716466339'
+  alias: Low Battery Notifications & Actions
+  description: ''
+  use_blueprint:
+    path: Blackshome/low-battery-notifications-and-actions.yaml
+    input:
+      include_time: time_enabled
+      time: '23:59:00'
+      include_persistent_notification: enable_persistent_notification
+- id: '1740069893264'
+  alias: Slaapkamer M&M lighting
+  description: ''
+  triggers:
+  - device_id: cf95ffe03f3e519ca18533aab253b80c
+    domain: hue
+    type: initial_press
+    subtype: 2
+    unique_id: 1fc0537b-b4a8-4e05-b8c4-bf681a7a84cc
+    trigger: device
+    id: Sexy time
+  - device_id: cf95ffe03f3e519ca18533aab253b80c
+    domain: hue
+    type: initial_press
+    subtype: 3
+    unique_id: 7b2b41a3-c362-4a77-b443-7a20f3f26449
+    trigger: device
+    id: Sexy time over
+  - device_id: cf95ffe03f3e519ca18533aab253b80c
+    domain: hue
+    type: initial_press
+    subtype: 1
+    unique_id: d7099ca5-4f39-427a-9e17-471cee3e83df
+    trigger: device
+    id: bed_firstB
+  - device_id: dcee079e15783e355bd40f30d7533ced
+    domain: hue
+    type: initial_press
+    subtype: 1
+    unique_id: a4248e86-1fce-4ff7-a16f-0d0066c8c415
+    trigger: device
+    id: door_firstB
+  - device_id: dcee079e15783e355bd40f30d7533ced
+    domain: hue
+    type: long_release
+    subtype: 1
+    unique_id: a4248e86-1fce-4ff7-a16f-0d0066c8c415
+    trigger: device
+    id: door_long_press
+  - device_id: cf95ffe03f3e519ca18533aab253b80c
+    domain: hue
+    type: long_release
+    subtype: 1
+    unique_id: d7099ca5-4f39-427a-9e17-471cee3e83df
+    trigger: device
+    id: bed_long_press
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - Sexy time
+      - condition: and
+        conditions:
+        - condition: time
+          after: '18:00:00'
+          before: '23:59:00'
+        - condition: zone
+          entity_id: person.martijn_eindhoven
+          zone: zone.home
+        - condition: zone
+          entity_id: person.marieke_pijlman
+          zone: zone.home
+        - condition: device
+          type: is_off
+          device_id: 4a04d4e5783e1de27a7d7fdb9bec74ab
+          entity_id: e410e81bef09324b9faece06fa127211
+          domain: light
+      sequence:
+      - action: media_player.volume_set
+        metadata: {}
+        data:
+          volume_level: 0.2
+        target:
+          device_id: c53a50807fde825e7372bd6dae7b3875
+      - action: media_player.play_media
+        target:
+          entity_id: media_player.sonos_slaapkamer_m_m
+        data:
+          media_content_id: spotify://01jmj476104v8w84z0v4f9becn/spotify:playlist:5TqTrgNA5gdN80xdJsVYbs
+          media_content_type: spotify://playlist
+        metadata:
+          title: Slow Beats (Sexy AF)
+          thumbnail: https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84895e3c7c98c0c0a7d510a188
+          media_class: playlist
+          children_media_class: track
+          navigateIds:
+          - {}
+          - media_content_type: spotify://library
+            media_content_id: spotify://01JMJ476104V8W84Z0V4F9BECN
+          - media_content_type: spotify://current_user_playlists
+            media_content_id: spotify://01jmj476104v8w84z0v4f9becn/current_user_playlists
+          - media_content_type: spotify://playlist
+            media_content_id: spotify://01jmj476104v8w84z0v4f9becn/spotify:playlist:5TqTrgNA5gdN80xdJsVYbs
+      - action: media_player.repeat_set
+        metadata: {}
+        data:
+          repeat: all
+        target:
+          device_id: c53a50807fde825e7372bd6dae7b3875
+      - action: hue.activate_scene
+        metadata: {}
+        data: {}
+        target:
+          entity_id: scene.hue_slaapkamer_m_m_lumen_de_secretas
+      - action: light.turn_on
+        metadata: {}
+        data: {}
+        target:
+          area_id: slaapkamer
+      - if:
+        - condition: numeric_state
+          entity_id: climate.slaapkamer_m_m
+          attribute: current_temperature
+          below: 17
+        then:
+        - device_id: 3255b4e8eae6a88d94610c0bf7c3d7e7
+          domain: climate
+          entity_id: 56daa96917ebfff8643d5988eedc1fb0
+          type: set_hvac_mode
+          hvac_mode: heat
+    - conditions:
+      - condition: trigger
+        id:
+        - Sexy time over
+      sequence:
+      - action: media_player.media_stop
+        metadata: {}
+        data: {}
+        target:
+          area_id: slaapkamer
+      - action: hue.activate_scene
+        metadata: {}
+        data:
+          transition: 5
+        target:
+          entity_id: scene.hue_slaapkamer_m_m_rusten
+      - if:
+        - condition: state
+          entity_id: climate.slaapkamer_m_m
+          state: heat
+        then:
+        - device_id: 3255b4e8eae6a88d94610c0bf7c3d7e7
+          domain: climate
+          entity_id: 56daa96917ebfff8643d5988eedc1fb0
+          type: set_hvac_mode
+          hvac_mode: 'off'
+    - conditions:
+      - condition: trigger
+        id:
+        - bed_firstB
+        - door_firstB
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data: {}
+        target:
+          device_id: 2fde68bfdd2739fa73d8e26fdb069881
+    - conditions:
+      - condition: trigger
+        id:
+        - bed_long_press
+        - door_long_press
+      sequence:
+      - action: light.turn_off
+        metadata: {}
+        data: {}
+        target:
+          device_id: 2fde68bfdd2739fa73d8e26fdb069881
+  mode: single
+- id: '1742152390655'
+  alias: Humidifier leeg
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.air_humidifier_ca_604w_smart_fault
+    to: 'on'
+  conditions: []
+  actions:
+  - action: notify.mobile_app_martijns_telefoon
+    metadata: {}
+    data:
+      message: Humidifier empty
+      title: Luchtbevochtiger leeg
+  - action: notify.mobile_app_iphone_mp
+    metadata: {}
+    data:
+      message: Luchtbevochtiger leeg
+  mode: single
+- id: '1742755488086'
+  alias: Mats TV aan?
+  description: This automation checks if Mats' TV is on at 22:00. If so it sends me
+    a message
+  triggers:
+  - trigger: time
+    at: '22:00:00'
+  - trigger: time
+    at: '21:45:00'
+  conditions:
+  - condition: state
+    entity_id: media_player.tv_mats_2
+    state: 'on'
+  actions:
+  - action: notify.mobile_app_martijns_telefoon
+    metadata: {}
+    data:
+      message: TV Mats staat nog aan
+  mode: single
+- id: '1743697613633'
+  alias: Check Hue Lights
+  description: Checks if Hue Lights in Gang 1 and 2 are on longer than 5minutes or
+    if the Lights in the Voortuins are accidentally turned on when they shouldn't
+  triggers:
+  - trigger: state
+    entity_id:
+    - light.hue_gang
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    id: Gang 1 On
+  - trigger: state
+    entity_id:
+    - light.hue_gang_2
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    id: Gang 2 on
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - Gang 1 On
+        - Gang 2 on
+      sequence:
+      - action: light.turn_off
+        metadata: {}
+        data: {}
+        target:
+          area_id:
+          - gang
+          - gang_2
+    - conditions:
+      - condition: trigger
+        id:
+        - Voortuin
+      - condition: numeric_state
+        entity_id: sensor.illuminance
+        above: 200
+      sequence:
+      - action: light.turn_off
+        metadata: {}
+        data: {}
+        target:
+          area_id: front_yard
+  mode: single
+- id: '1748878105245'
+  alias: Kantoor verlichting v2 (Simplified)
+  description: Controls Govee LED strips based on Hue Dimmer switch. Uses sensor.office_lighting_preset_id
+    helper for time-based presets if needed.
+  triggers:
+  - device_id: 737e0da8ac87fc8b19aae70df0fee7c5
+    domain: hue
+    type: initial_press
+    subtype: 1
+    unique_id: 8fc7163b-ef28-407d-9584-fb4e98883299
+    trigger: device
+    id: on_button_pressed
+  - device_id: 737e0da8ac87fc8b19aae70df0fee7c5
+    domain: hue
+    type: initial_press
+    subtype: 4
+    unique_id: bbff8b84-a9c9-4e58-8fb6-ef4283f370ac
+    trigger: device
+    id: off_button_pressed
+  - device_id: 737e0da8ac87fc8b19aae70df0fee7c5
+    domain: hue
+    type: long_release
+    subtype: 1
+    unique_id: 8fc7163b-ef28-407d-9584-fb4e98883299
+    trigger: device
+    id: off_button_pressed2
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: on_button_pressed
+      sequence:
+      - action: light.turn_on
+        data: {}
+        target:
+          device_id:
+          - cc0a12ce7cf55ddcf1bce7b4399b0390
+          - d51b3f7f8e5485c16f85931b398dcbe6
+    - conditions:
+      - condition: trigger
+        id:
+        - off_button_pressed
+        - off_button_pressed2
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: light.h6641_4165
+          state: 'on'
+        - condition: state
+          entity_id: light.h6641_6a75
+          state: 'on'
+      sequence:
+      - action: light.turn_off
+        data:
+          transition: 2
+        target:
+          device_id:
+          - cc0a12ce7cf55ddcf1bce7b4399b0390
+          - d51b3f7f8e5485c16f85931b398dcbe6
+  mode: single
+- id: '1751299416846'
+  alias: Airco Sequence Controller v2 (Helper-Based)
+  description: Handles button sequence to toggle Airco Mode with proactive notifications
+    using binary_sensor.bedroom_needs_cooling helper.
+  triggers:
+  - event_type: hue_event
+    event_data:
+      device_id: dcee079e15783e355bd40f30d7533ced
+      type: initial_press
+      subtype: 2
+    id: button_2_pressed
+    trigger: event
+  - event_type: hue_event
+    event_data:
+      device_id: dcee079e15783e355bd40f30d7533ced
+      type: initial_press
+      subtype: 3
+    id: button_3_pressed
+    trigger: event
+  - at: 08:00:00
+    id: 8am_reset
+    trigger: time
+  - at: '20:30:00'
+    id: proactive_check
+    trigger: time
+  - trigger: state
+    entity_id:
+    - input_boolean.activate_airco_now
+    from: 'off'
+    to: 'on'
+    id: activate_now
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: button_2_pressed
+      sequence:
+      - target:
+          entity_id: script.airco_sequence_timeout
+        action: script.turn_on
+        data: {}
+    - conditions:
+      - condition: trigger
+        id: button_3_pressed
+      - condition: state
+        entity_id: input_boolean.airco_sequence_started
+        state: 'on'
+      sequence:
+      - target:
+          entity_id: input_boolean.airco_sequence_started
+        action: input_boolean.turn_off
+        data: {}
+      - target:
+          entity_id: input_boolean.activate_airco_mode
+        action: input_boolean.toggle
+        data: {}
+      - target:
+          entity_id: media_player.sonos_slaapkamer_m_m
+        data:
+          volume_level: 0.25
+        action: media_player.volume_set
+      - target:
+          entity_id: media_player.sonos_slaapkamer_m_m
+        data:
+          media_content_id: media-source://media_source/local/Airco Mode Activated.mp3
+          media_content_type: audio/mpeg
+        action: media_player.play_media
+      - data:
+          title: Airco Schedule Activated
+          message: The bedroom airco night schedule is now active.
+          data:
+            actions:
+            - action: TURN_OFF_AIRCO_MODE
+              title: Turn Off
+        action: notify.mobile_app_martijns_telefoon
+    - conditions:
+      - condition: trigger
+        id: 8am_reset
+      sequence:
+      - target:
+          entity_id: input_boolean.activate_airco_mode
+        action: input_boolean.turn_off
+        data: {}
+    - conditions:
+      - condition: trigger
+        id: proactive_check
+      - condition: state
+        entity_id: input_boolean.activate_airco_mode
+        state: 'off'
+      - condition: state
+        entity_id: binary_sensor.bedroom_needs_cooling
+        state: 'on'
+      sequence:
+      - data:
+          title: Activate Airco Schedule
+          message: It's warm in the bedroom ({{ state_attr('binary_sensor.bedroom_needs_cooling',
+            'current_temperature') }}°C). Would you like to activate the night schedule?
+          data:
+            actions:
+            - action: TURN_ON_AIRCO_MODE
+              title: Activate Schedule
+              icon: sfsymbols:checkmark.square
+            - action: TURN_ON_AIRCO_NOW
+              title: Activate Now
+              icon: sfsymbols:thermometer.snowflake
+        action: notify.mobile_app_martijns_telefoon
+    - conditions:
+      - condition: trigger
+        id:
+        - activate_now
+      sequence:
+      - target:
+          entity_id: input_boolean.activate_airco_mode
+        action: input_boolean.toggle
+        data: {}
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
+      - action: input_boolean.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.activate_airco_now
+  mode: single
+- id: '1751299685406'
+  alias: Handle Airco Notification Actions
+  description: ''
+  triggers:
+  - event_type: mobile_app_notification_action
+    event_data:
+      action: TURN_OFF_AIRCO_MODE
+    id: notification_turn_off
+    trigger: event
+    alias: Turn Off Airco Trigger
+  - event_type: mobile_app_notification_action
+    event_data:
+      action: TURN_ON_AIRCO_MODE
+    id: notification_turn_on
+    trigger: event
+    alias: Turn On Airco Mode
+  - alias: Turn On Airco Now
+    event_type: mobile_app_notification_action
+    event_data:
+      action: TURN_ON_AIRCO_NOW
+    id: notification_activate_now
+    trigger: event
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: notification_turn_off
+      sequence:
+      - target:
+          entity_id: input_boolean.activate_airco_mode
+        action: input_boolean.turn_off
+        data: {}
+    - conditions:
+      - condition: trigger
+        id: notification_turn_on
+      sequence:
+      - target:
+          entity_id: input_boolean.activate_airco_mode
+        action: input_boolean.turn_on
+        data: {}
+    - conditions:
+      - condition: trigger
+        id:
+        - notification_activate_now
+      sequence:
+      - action: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.activate_airco_now
+- id: '1751372798574'
+  alias: Airco Night Schedule (All-in-One) v3
+  description: Handles the entire airco night schedule by calling state-specific scripts.
+  triggers:
+  - entity_id: input_boolean.activate_airco_mode
+    to: 'on'
+    id: schedule_activated
+    trigger: state
+  - entity_id: input_boolean.activate_airco_mode
+    to: 'off'
+    id: schedule_cancelled
+    trigger: state
+  - trigger: state
+    entity_id:
+    - input_boolean.activate_airco_now
+    from: 'off'
+    to: 'on'
+    id: activate_now
+  - at: '21:30:00'
+    id: step_1_turn_on
+    trigger: time
+  - at: '22:15:00'
+    id: step_2_mid_high
+    trigger: time
+  - at: '23:00:00'
+    id: step_3_low_mid
+    trigger: time
+  - at: 02:30:00
+    id: step_4_fan_only
+    trigger: time
+  - at: 07:00:00
+    id: step_5_turn_off
+    trigger: time
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: schedule_cancelled
+      sequence:
+      - target:
+          entity_id: climate.slaapkamer_m_m
+        action: climate.turn_off
+        data: {}
+    - conditions:
+      - condition: trigger
+        id: schedule_activated
+      sequence:
+      - choose:
+        - conditions:
+          - condition: time
+            after: '21:30:00'
+            before: '22:15:00'
+          sequence:
+          - action: script.airco_night_state_1_cool_high
+            data: {}
+        - conditions:
+          - condition: time
+            after: '22:15:00'
+            before: '23:00:00'
+          sequence:
+          - action: script.airco_night_state_2_cool_mid_high
+            data: {}
+        - conditions:
+          - condition: time
+            after: '23:00:00'
+            before: 01:30:00
+            weekday:
+            - mon
+            - tue
+            - wed
+            - thu
+            - fri
+            - sat
+            - sun
+          sequence:
+          - action: script.airco_night_state_3_cool_low_mid
+            data: {}
+        - conditions:
+          - condition: time
+            after: 01:30:00
+            before: 07:00:00
+          sequence:
+          - action: script.airco_night_state_4_fan_only
+            data: {}
+    - conditions:
+      - condition: trigger
+        id:
+        - step_1_turn_on
+        - step_2_mid_high
+        - step_3_low_mid
+        - step_4_fan_only
+        - step_5_turn_off
+      - condition: state
+        entity_id: input_boolean.activate_airco_mode
+        state: 'on'
+      sequence:
+      - choose:
+        - conditions:
+          - condition: trigger
+            id: step_1_turn_on
+          sequence:
+          - action: script.airco_night_state_1_cool_high
+            data: {}
+        - conditions:
+          - condition: trigger
+            id: step_2_mid_high
+          sequence:
+          - action: script.airco_night_state_2_cool_mid_high
+            data: {}
+        - conditions:
+          - condition: trigger
+            id: step_3_low_mid
+          sequence:
+          - action: script.airco_night_state_3_cool_low_mid
+            data: {}
+        - conditions:
+          - condition: trigger
+            id: step_4_fan_only
+          sequence:
+          - action: script.airco_night_state_4_fan_only
+            data: {}
+        - conditions:
+          - condition: trigger
+            id: step_5_turn_off
+          sequence:
+          - target:
+              entity_id: climate.slaapkamer_m_m
+            action: climate.turn_off
+            data: {}
+          - target:
+              entity_id: input_boolean.activate_airco_mode
+            action: input_boolean.turn_off
+            data: {}
+    - conditions:
+      - condition: trigger
+        id:
+        - activate_now
+      sequence:
+      - action: script.airco_start_cooling_early
+        data: {}
+  mode: single
+- id: '1757527025762'
+  alias: Kitchen Heating v2 (Helper-Based)
+  description: Manages kitchen convector heater using binary_sensor.kitchen_should_heat
+    helper for schedule + presence + temperature logic.
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.kitchen_should_heat
+    id: heating_decision_changed
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.kitchen_should_heat
+        state: 'on'
+      sequence:
+      - data:
+          temperature: 20
+          hvac_mode: heat
+        target:
+          device_id: 25585c4bfb3c99f9b887f8a7237f92fc
+        action: climate.set_temperature
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.kitchen_should_heat
+        state: 'off'
+      sequence:
+      - data:
+          hvac_mode: 'off'
+        action: climate.set_hvac_mode
+        target:
+          entity_id: climate.keuken
+  mode: restart
+- id: tado_fail_safe_manager_1664372402
+  alias: Tado Fail-Safe Manager v2
+  description: Monitors Tado connectivity and temperature to prevent runaway heating.
+    Turns heating off via local HomeKit control if a fault is detected, and restores
+    Tado's schedule when the system is stable again.
+  triggers:
+  - entity_id: binary_sensor.tado_system_online
+    to: 'off'
+    for: 00:10:00
+    id: connection_lost
+    trigger: state
+  - entity_id: sensor.tado_homekit_wireless_thermostat_woonkamer_current_temperature
+    above: input_number.tado_failsafe_max_temp
+    id: runaway_heating
+    trigger: numeric_state
+  - entity_id: binary_sensor.tado_system_online
+    to: 'on'
+    for: 00:05:00
+    id: connection_restored
+    trigger: state
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - connection_lost
+        - runaway_heating
+      - condition: state
+        entity_id: input_boolean.tado_failsafe_engaged
+        state: 'off'
+      - or:
+        - condition: trigger
+          id: connection_lost
+        - and:
+          - condition: trigger
+            id: runaway_heating
+          - condition: template
+            value_template: '{{ state_attr(''climate.woonkamer'', ''hvac_action'')
+              == ''heating'' }}'
+          - condition: template
+            value_template: "{{ states('sensor.tado_homekit_wireless_thermostat_woonkamer_current_temperature')
+              | float(0)\n  > state_attr('climate.woonkamer', 'temperature') | float(0)
+              }}"
+      sequence:
+      - target:
+          entity_id: input_boolean.tado_failsafe_engaged
+        action: input_boolean.turn_on
+      - data:
+          title: Tado Fail-Safe Engaged
+          message: Tado heating turned off due to {{ trigger.id | replace('_', ' ')
+            }}. Direct control via HomeKit initiated to shut down the boiler.
+        action: persistent_notification.create
+      - target:
+          entity_id: climate.tado_homekit_wireless_thermostat_woonkamer
+        data:
+          hvac_mode: 'off'
+        action: climate.set_hvac_mode
+    - conditions:
+      - condition: trigger
+        id: connection_restored
+      - condition: state
+        entity_id: input_boolean.tado_failsafe_engaged
+        state: 'on'
+      sequence:
+      - target:
+          entity_id: climate.woonkamer
+        data:
+          hvac_mode: auto
+        action: climate.set_hvac_mode
+      - data:
+          title: Tado System Recovered
+          message: Tado connection is stable. Restoring schedule control now.
+        action: persistent_notification.create
+      - target:
+          entity_id: input_boolean.tado_failsafe_engaged
+        action: input_boolean.turn_off
+  mode: single
+- id: office_heating_failsafe
+  alias: Office Heating Fail-Safe
+  description: Monitors office temperature to prevent runaway heating. Turns heating
+    off if temperature exceeds safe threshold.
+  triggers:
+  - entity_id: sensor.kantoor_temperature_2
+    above: input_number.kantoor_failsafe_max_temp
+    id: temperature_too_high
+    trigger: numeric_state
+    for:
+      minutes: 5
+  conditions:
+  - condition: state
+    entity_id: climate.kantoor_2
+    state: heat
+  actions:
+  - action: climate.turn_off
+    target:
+      entity_id: climate.kantoor_2
+    data: {}
+  - data:
+      title: Office Heating Fail-Safe Engaged
+      message: Office heating turned off - temperature reached {{ states('sensor.kantoor_temperature_2')
+        }}°C (max {{ states('input_number.kantoor_failsafe_max_temp') }}°C)
+    action: notify.mobile_app_martijns_telefoon
+  - data:
+      title: Office Heating Fail-Safe
+      message: Temperature exceeded safe threshold ({{ states('sensor.kantoor_temperature_2')
+        }}°C). Heating has been turned off.
+    action: persistent_notification.create
+  mode: single
+- id: mats_room_heating_failsafe
+  alias: Mats Room Heating Fail-Safe
+  description: Monitors Mats room temperature to prevent runaway heating. Turns both
+    Tado and Airco off if temperature exceeds safe threshold.
+  triggers:
+  - platform: template
+    value_template: '{{ state_attr(''climate.kamer_mats'', ''current_temperature'')
+      | float(0) > states(''input_number.mats_room_failsafe_max_temp'') | float(22)
+      }}'
+    id: temperature_too_high
+    for:
+      minutes: 5
+  conditions:
+  - condition: or
+    conditions:
     - condition: state
-      entity_id: sun.sun
-      state: 'below_horizon'
-  action:
-    - service: light.turn_on
+      entity_id: climate.mats
+      state: heat
+    - condition: state
+      entity_id: climate.kamer_mats
+      state: heat
+  actions:
+  - action: climate.turn_off
+    target:
+      entity_id:
+      - climate.mats
+      - climate.kamer_mats
+    data: {}
+  - data:
+      title: Mats Room Heating Fail-Safe Engaged
+      message: Mats room heating turned off - temperature reached {{ state_attr('climate.kamer_mats',
+        'current_temperature') }}°C (max {{ states('input_number.mats_room_failsafe_max_temp')
+        }}°C)
+    action: notify.mobile_app_martijns_telefoon
+  - data:
+      title: Mats Room Heating Fail-Safe
+      message: Temperature exceeded safe threshold ({{ state_attr('climate.kamer_mats',
+        'current_temperature') }}°C). Heating has been turned off.
+    action: persistent_notification.create
+  mode: single
+- id: nora_room_heating_failsafe
+  alias: Nora Room Heating Fail-Safe
+  description: Monitors Nora room temperature to prevent runaway heating. Turns both
+    Tado and Airco off if temperature exceeds safe threshold.
+  triggers:
+  - platform: template
+    value_template: '{{ state_attr(''climate.kamer_nora'', ''current_temperature'')
+      | float(0) > states(''input_number.nora_room_failsafe_max_temp'') | float(22)
+      }}'
+    id: temperature_too_high
+    for:
+      minutes: 5
+  conditions:
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: climate.nora
+      state: heat
+    - condition: state
+      entity_id: climate.nora
+      state: heat
+  actions:
+  - action: climate.turn_off
+    target:
+      entity_id:
+      - climate.nora
+      - climate.kamer_nora
+    data: {}
+  - data:
+      title: Nora Room Heating Fail-Safe Engaged
+      message: Nora room heating turned off - temperature reached {{ state_attr('climate.kamer_nora',
+        'current_temperature') }}°C (max {{ states('input_number.nora_room_failsafe_max_temp')
+        }}°C)
+    action: notify.mobile_app_martijns_telefoon
+  - data:
+      title: Nora Room Heating Fail-Safe
+      message: Temperature exceeded safe threshold ({{ state_attr('climate.kamer_nora',
+        'current_temperature') }}°C). Heating has been turned off.
+    action: persistent_notification.create
+  mode: single
+- id: '1759669482864'
+  alias: 'Buitenverlichting: AAN/UIT (volgens schema) v2'
+  description: Turns outdoor lights on or off based on the master schedule helper
+    and verifies the state.
+  triggers:
+  - entity_id: binary_sensor.buitenverlichting_schema
+    to:
+    - 'on'
+    - 'off'
+    trigger: state
+  conditions: []
+  actions:
+  - variables:
+      lights_to_check:
+      - light.voortuin_verlichting
+      - light.achtertuin_verlichting
+      target_state: '{{ trigger.to_state.state }}'
+      service_to_call: light.turn_{{ target_state }}
+  - target:
+      entity_id: '{{ lights_to_check }}'
+    action: '{{ service_to_call }}'
+  - delay:
+      seconds: 5
+  - target:
+      entity_id: "{# This template filters the list of lights, REJECTING any that
+        are\n   already in the desired state. The command is then sent ONLY to the
+        incorrect lights. #}\n{{ lights_to_check | reject('is_state', target_state)
+        | list }}\n"
+    action: '{{ service_to_call }}'
+  mode: restart
+- id: '1759670648422'
+  alias: Lighting - Living Room & Kitchen v2 (Helper-Based)
+  description: Manages Living Room and Kitchen lights with time-based scenes using
+    sensor helper for scene selection.
+  triggers:
+  - device_id: f6090055673a071d8fbb1bce5acb43af
+    domain: hue
+    type: initial_press
+    subtype: 1
+    id: short_press
+    trigger: device
+  - device_id: f6090055673a071d8fbb1bce5acb43af
+    domain: hue
+    type: long_press
+    subtype: 1
+    unique_id: 62a1b923-de2a-44a2-ab88-875f79adc7c6
+    trigger: device
+    id: long_press
+  - device_id: f2dab5e5bfd4791c48f3d98e5afba317
+    domain: hue
+    type: initial_press
+    subtype: 1
+    id: kitchen_initial_press
+    trigger: device
+  - entity_id: sensor.illuminance
+    above: 1400
+    id: illuminance_high
+    trigger: numeric_state
+  - entity_id: sensor.bsw14_tado_mode
+    to: away
+    id: away_mode
+    trigger: state
+  - entity_id: sensor.illuminance
+    below: 550
+    id: illuminance_low
+    trigger: numeric_state
+  - at:
+    - '17:00:00'
+    - '20:00:00'
+    - '23:00:00'
+    id: time_based_scene_change
+    trigger: time
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - short_press
+        - kitchen_initial_press
+      - condition: state
+        entity_id: light.hue_woonkamer
+        state: 'off'
+      sequence:
+      - target:
+          entity_id: light.eettafel_ledstrip
+        action: light.turn_on
+        data: {}
+      - action: switch.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: switch.athom_smart_plug_v2_3
+    - conditions:
+      - condition: trigger
+        id: illuminance_high
+      sequence:
+      - target:
+          entity_id: light.living_room_kitchen_lights
+        data:
+          transition: 2
+        action: light.turn_off
+      - action: switch.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: switch.athom_smart_plug_v2_3
+    - conditions:
+      - condition: trigger
+        id: away_mode
+      sequence:
+      - data:
+          transition: 2
+        action: light.turn_off
+        target:
+          entity_id: light.living_room_kitchen_lights
+      - action: switch.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: switch.athom_smart_plug_v2_3
+    - conditions:
+      - condition: trigger
+        id: illuminance_low
+      - condition: state
+        entity_id: sensor.bsw14_tado_mode
+        state: home
+      - condition: state
+        entity_id: media_player.tv_woonkamer_samsung
+        state: 'on'
+      - condition: state
+        entity_id: light.living_room_kitchen_lights
+        state: 'off'
+      - condition: time
+        after: '17:00:00'
+      sequence:
+      - target:
+          entity_id: light.living_room_kitchen_lights
+          device_id: b90caa4ce847b3d26d3afd811d81fe0d
+        data:
+          transition: 2
+        action: light.turn_on
+      - delay: 00:00:01
+      - data:
+          transition: '{{ 2 if now().hour < 23 else 0 }}'
+        target:
+          entity_id: '{{ state_attr(''sensor.living_room_current_scenes'', ''scenes_list'')
+            }}'
+        action: scene.turn_on
+      - action: switch.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: switch.athom_smart_plug_v2_3
+    - conditions:
+      - condition: trigger
+        id: time_based_scene_change
+      - condition: state
+        entity_id: light.living_room_kitchen_lights
+        state: 'on'
+      sequence:
+      - data:
+          transition: '{{ 2 if now().hour < 23 else 0 }}'
+        target:
+          entity_id: '{{ state_attr(''sensor.living_room_current_scenes'', ''scenes_list'')
+            }}'
+        action: scene.turn_on
+    - conditions:
+      - condition: trigger
+        id:
+        - long_press
+      sequence:
+      - type: turn_off
+        device_id: b90caa4ce847b3d26d3afd811d81fe0d
+        entity_id: c9fc782861b834c5778b83515e7f68ca
+        domain: light
+      - action: switch.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: switch.athom_smart_plug_v2_3
+  mode: single
+- id: '1760706304528'
+  alias: Kantoor Temperature offset
+  description: 'Monitors the offset between the Tado Thermostat Valve and the Sonoff '
+  use_blueprint:
+    path: dllfpp/temp_sensor_calibration.yaml
+    input:
+      sensor_to_monitor: sensor.t_temperature
+      entity_to_update: climate.kantoor_2
+      threshold: 2
+      start_time: 07:30:00
+      end_time: '18:00:00'
+- id: '1761488141839'
+  alias: Licht aan kamer Mats
+  description: ''
+  triggers:
+  - device_id: 90498b5e7d87b918fa65d6d4ae81989b
+    domain: zha
+    type: remote_button_short_press
+    subtype: turn_on
+    trigger: device
+    id: turn on
+  - device_id: 90498b5e7d87b918fa65d6d4ae81989b
+    domain: zha
+    type: remote_button_short_press
+    subtype: turn_off
+    trigger: device
+    id: turn off
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - turn on
+      sequence:
+      - type: turn_on
+        device_id: 788c9812c564488441f6c23738157f0c
+        entity_id: c7ec03da08bff2755f85397dae4d4c48
+        domain: switch
+      - action: light.turn_on
+        metadata: {}
+        data: {}
+        target:
+          device_id: a960a1952e4316317d33a3e05bbc9c7e
+    - conditions:
+      - condition: trigger
+        id:
+        - turn off
+      sequence:
+      - type: turn_off
+        device_id: 788c9812c564488441f6c23738157f0c
+        entity_id: c7ec03da08bff2755f85397dae4d4c48
+        domain: switch
+      - action: light.turn_off
+        metadata: {}
+        data: {}
+        target:
+          device_id: a960a1952e4316317d33a3e05bbc9c7e
+  mode: single
+- id: '1761928464065'
+  alias: Mats Room Heating Control (Tado/Airco) v3
+  description: Controls Mats room heating using Tado when central heating is available,
+    or LG Airco otherwise. Supports both presence-based and children's week heating.
+    Includes 2-hour cooldown for airco and sets fan/swing modes.
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.mats_use_tado
+    id: tado_decision_changed
+  - trigger: state
+    entity_id: binary_sensor.mats_use_airco
+    id: airco_decision_changed
+  - trigger: state
+    entity_id: binary_sensor.central_heating_available
+    id: central_heating_changed
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.mats_use_tado
+        state: 'on'
+      sequence:
+      - action: climate.set_temperature
+        data:
+          temperature: '{{ state_attr(''binary_sensor.mats_use_tado'', ''target_temperature'')
+            | float }}'
+          hvac_mode: heat
+        target:
+          entity_id: climate.mats
+      - action: climate.turn_off
+        target:
+          entity_id: climate.kamer_mats
+        data: {}
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.mats_airco_last_off
+        data:
+          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.mats_use_airco
+        state: 'on'
+      - condition: state
+        entity_id: binary_sensor.mats_airco_cooldown_complete
+        state: 'on'
+      sequence:
+      - action: climate.set_temperature
+        data:
+          temperature: 20
+          hvac_mode: heat
+        target:
+          entity_id: climate.kamer_mats
+      - action: climate.set_fan_mode
+        data:
+          fan_mode: MID_HIGH
+        target:
+          entity_id: climate.kamer_mats
+      - action: climate.set_swing_mode
+        data:
+          swing_mode: SwingUpDown
+        target:
+          entity_id: climate.kamer_mats
+      - action: climate.set_swing_horizontal_mode
+        data:
+          swing_mode: SwingLeftRight
+        target:
+          entity_id: climate.kamer_mats
+      - action: climate.turn_off
+        target:
+          entity_id: climate.mats
+        data: {}
+    default:
+    - action: climate.turn_off
       target:
-        entity_id: light.living_room_main
-      data:
-        brightness_pct: 75
-
-- id: 'example_schedule_lights'
-  alias: 'Example: Evening Light Schedule'
-  description: 'Turn on evening lights at sunset'
-  trigger:
-    - platform: sun
-      event: sunset
-      offset: "-00:30:00"
-  action:
-    - service: light.turn_on
+        entity_id:
+        - climate.mats
+        - climate.kamer_mats
+      data: {}
+    - if:
+      - condition: template
+        value_template: '{{ trigger.from_state is defined and trigger.from_state.entity_id
+          == ''binary_sensor.mats_use_airco'' and trigger.from_state.state == ''on''
+          and trigger.to_state.state == ''off'' }}'
+      then:
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.mats_airco_last_off
+        data:
+          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+  mode: single
+- id: '1761928495448'
+  alias: Nora Room Heating Control (Tado/Airco) v3
+  description: Controls Nora room heating using Tado when central heating is available,
+    or LG Airco otherwise. Supports both presence-based and children's week heating.
+    Includes 2-hour cooldown for airco and sets fan/swing modes.
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.nora_use_tado
+    id: tado_decision_changed
+  - trigger: state
+    entity_id: binary_sensor.nora_use_airco
+    id: airco_decision_changed
+  - trigger: state
+    entity_id: binary_sensor.central_heating_available
+    id: central_heating_changed
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.nora_use_tado
+        state: 'on'
+      sequence:
+      - action: climate.set_temperature
+        data:
+          temperature: '{{ state_attr(''binary_sensor.nora_use_tado'', ''target_temperature'')
+            | float }}'
+          hvac_mode: heat
+        target:
+          entity_id: climate.nora
+      - action: climate.turn_off
+        target:
+          entity_id: climate.kamer_nora
+        data: {}
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.nora_airco_last_off
+        data:
+          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.nora_use_airco
+        state: 'on'
+      - condition: state
+        entity_id: binary_sensor.nora_airco_cooldown_complete
+        state: 'on'
+      sequence:
+      - action: climate.set_temperature
+        data:
+          temperature: 20
+          hvac_mode: heat
+        target:
+          entity_id: climate.kamer_nora
+      - action: climate.set_fan_mode
+        data:
+          fan_mode: MID_HIGH
+        target:
+          entity_id: climate.kamer_nora
+      - action: climate.set_swing_mode
+        data:
+          swing_mode: SwingUpDown
+        target:
+          entity_id: climate.kamer_nora
+      - action: climate.set_swing_horizontal_mode
+        data:
+          swing_mode: SwingLeftRight
+        target:
+          entity_id: climate.kamer_nora
+      - action: climate.turn_off
+        target:
+          entity_id: climate.nora
+        data: {}
+    default:
+    - action: climate.turn_off
       target:
-        area_id: living_room
-      data:
-        brightness_pct: 50
-
-- id: 'example_device_notification'
-  alias: 'Example: Low Battery Notification'
-  description: 'Notify when device battery is low'
-  trigger:
-    - platform: numeric_state
-      entity_id: sensor.phone_battery_level
-      below: 20
-  condition:
-    - condition: time
-      after: '09:00:00'
-      before: '22:00:00'
-  action:
-    - service: notify.mobile_app
-      data:
-        title: "Low Battery Alert"
-        message: "Your phone battery is at {{ states('sensor.phone_battery_level') }}%"
+        entity_id:
+        - climate.nora
+        - climate.kamer_nora
+      data: {}
+    - if:
+      - condition: template
+        value_template: '{{ trigger.from_state is defined and trigger.from_state.entity_id
+          == ''binary_sensor.nora_use_airco'' and trigger.from_state.state == ''on''
+          and trigger.to_state.state == ''off'' }}'
+      then:
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.nora_airco_last_off
+        data:
+          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+  mode: single
+- id: master_bathroom_predictive_heating
+  alias: Master Bathroom Predictive Heating
+  description: Automatically starts floor heating at calculated time to reach target
+    temperature by desired ready time. Uses smart schedule with weekday/weekend and
+    morning/evening settings. Locks in once started to prevent restart loops.
+  triggers:
+  - trigger: template
+    value_template: '{{ now().strftime(''%Y-%m-%d %H:%M'') == (states(''sensor.master_bathroom_preheat_start_time'')
+      | as_timestamp | timestamp_custom(''%Y-%m-%d %H:%M'')) }}'
+    id: preheat_time_reached
+  conditions:
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: binary_sensor.marieke_actually_home
+      state: 'on'
+    - condition: state
+      entity_id: binary_sensor.martijn_actually_home
+      state: 'on'
+    alias: Marieke or Martijn is home
+  - condition: template
+    value_template: '{{ states(''sensor.master_bathroom_schedule_enabled'') == ''on''
+      }}'
+    alias: Schedule is enabled for current time slot
+  - condition: template
+    value_template: '{{ states(''sensor.master_bathroom_next_schedule'') not in [''unknown'',
+      ''unavailable'', ''none'', ''''] }}'
+    alias: Next schedule is valid
+  - condition: template
+    value_template: '{{ state_attr(''climate.master_bathroom'', ''current_temperature'')
+      | float(0) < states(''input_number.master_bathroom_comfort_temperature'') |
+      float(0) }}'
+    alias: Current temperature below target
+  - condition: template
+    value_template: '{% set last_start = states(''input_datetime.master_bathroom_heating_started'')
+      %} {% if last_start in [''unknown'', ''unavailable'', ''none'', ''''] %} true
+      {% else %} {% set time_since_start = (as_timestamp(now()) - as_timestamp(last_start))
+      / 3600 %} {{ time_since_start > 4 }} {% endif %}'
+    alias: Not recently started (prevents restart loops)
+  actions:
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.master_bathroom_heating_started
+    data:
+      datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.master_bathroom_current_schedule_time
+    data:
+      time: '{{ states(''sensor.master_bathroom_next_schedule'') }}'
+  - action: climate.set_hvac_mode
+    target:
+      entity_id: climate.master_bathroom
+    data:
+      hvac_mode: heat_cool
+  - action: climate.set_temperature
+    target:
+      entity_id: climate.master_bathroom
+    data:
+      temperature: '{{ states(''input_number.master_bathroom_comfort_temperature'')
+        | float(22) }}'
+  - action: logbook.log
+    data:
+      name: Master Bathroom Heating
+      message: 'Started predictive heating for {{ state_attr(''sensor.master_bathroom_next_schedule'',
+        ''day_type'') }} {{ state_attr(''sensor.master_bathroom_next_schedule'', ''schedule_type'')
+        }}. Target ready time: {{ states(''sensor.master_bathroom_next_schedule'')
+        }}. Preheat time: {{ states(''sensor.master_bathroom_preheat_minutes'') }}
+        minutes.'
+      entity_id: climate.master_bathroom
+  mode: single
+- id: master_bathroom_return_to_setback
+  alias: Master Bathroom Return to Setback
+  description: Returns bathroom floor heating to setback (eco) temperature after comfort
+    duration expires. Uses the actual schedule time plus comfort duration to determine
+    when to lower temperature.
+  triggers:
+  - trigger: time_pattern
+    minutes: "/1"
+    id: comfort_check
+  - trigger: state
+    entity_id:
+    - binary_sensor.marieke_actually_home
+    - binary_sensor.martijn_actually_home
+    to: 'off'
+    for:
+      minutes: 5
+    id: person_left_home
+  conditions:
+  - condition: state
+    entity_id: climate.master_bathroom
+    state: heat_cool
+    alias: Heating is currently on
+  - condition: template
+    value_template: '{{ state_attr(''climate.master_bathroom'', ''temperature'') |
+      float(0) > states(''input_number.master_bathroom_setback_temperature'') | float(16)
+      }}'
+    alias: Currently at comfort temperature (not already at setback)
+  - condition: or
+    conditions:
+    - condition: template
+      value_template: '{% set current_schedule = states(''input_datetime.master_bathroom_current_schedule_time'')
+        %} {% set comfort_mins = states(''input_number.master_bathroom_comfort_duration'')
+        | float(60) %} {% if current_schedule not in [''unknown'', ''unavailable'',
+        ''none'', ''''] %} {% set today = now().date() %} {% set schedule_datetime
+        = today.strftime(''%Y-%m-%d'') + '' '' + current_schedule %} {% set schedule_ts
+        = as_timestamp(schedule_datetime) %} {% set end_comfort_ts = schedule_ts
+        + (comfort_mins * 60) %} {% set current_ts = as_timestamp(now()) %} {{ current_ts
+        >= end_comfort_ts }} {% else %} false {% endif %}'
+      alias: Comfort duration has expired
+    - condition: and
+      conditions:
+      - condition: state
+        entity_id: binary_sensor.marieke_actually_home
+        state: 'off'
+      - condition: state
+        entity_id: binary_sensor.martijn_actually_home
+        state: 'off'
+      alias: Both people have left home
+  actions:
+  - action: climate.set_temperature
+    target:
+      entity_id: climate.master_bathroom
+    data:
+      temperature: '{{ states(''input_number.master_bathroom_setback_temperature'')
+        | float(16) }}'
+  - action: logbook.log
+    data:
+      name: Master Bathroom Heating
+      message: 'Returned to setback temperature ({{ states(''input_number.master_bathroom_setback_temperature'')
+        }}°C) after comfort period. Trigger: {{ trigger.id }}'
+      entity_id: climate.master_bathroom
+  mode: single

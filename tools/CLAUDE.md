@@ -10,6 +10,7 @@ This directory contains Python validation scripts for Home Assistant configurati
 **What it runs**:
 - YAML syntax validation
 - Entity reference validation
+- Device trigger validation
 - Official HA validation
 
 ### `yaml_validator.py` - YAML Syntax Validation
@@ -29,13 +30,28 @@ This directory contains Python validation scripts for Home Assistant configurati
 - Reports missing references with file/line context
 **Usage**: `python reference_validator.py`
 
+### `device_validator.py` - Device Trigger Validation
+**Purpose**: Validates device triggers in automations
+**Key features**:
+- Parses device registry from `.storage/core.device_registry`
+- Validates all device_id references in automation triggers
+- Prevents false positives from local validation without physical devices
+- Ready for MCP integration for live device verification
+**Usage**: `python device_validator.py`
+
+**Why this validator exists**:
+Device triggers (like Hue dimmer switches, ZHA remotes) reference devices by device_id. When validating locally without physical devices connected, Home Assistant's official validator reports false errors like "Device has no config entry from domain 'hue'". This validator checks the device registry directly and confirms devices exist, preventing these false positives.
+
 ### `ha_official_validator.py` - Official HA Validation
 **Purpose**: Uses Home Assistant's own validation tools
 **Key features**:
 - Most comprehensive validation
 - Integration-specific checks
 - Platform compatibility verification
+- Filters device trigger errors (false positives) to warnings
 **Usage**: `python ha_official_validator.py`
+
+**Enhanced in v2**: Now detects device trigger validation errors and converts them to warnings instead of failures, since these are expected when validating locally. Actual device validation is handled by `device_validator.py`.
 
 ### `entity_explorer.py` - Entity Discovery Tool
 **Purpose**: Search and explore available HA entities
