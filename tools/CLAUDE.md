@@ -141,6 +141,65 @@ All Python code in this directory must:
 - ✅ **Have type hints** (mypy): Function signatures should be typed
 - ✅ **Include docstrings**: Module, class, and function level
 - ✅ **Have tests**: Minimum 80% coverage
+- ✅ **Follow file size limits**: See below for specifics
+
+### File Size Limits
+
+Keep Python files maintainable by following these limits:
+
+**Maximum Sizes:**
+- **File size**: 500 lines maximum
+- **Function size**: 50 lines maximum
+- **Class size**: 100 lines maximum
+
+**Rationale:**
+- Easier to understand and review
+- Faster to navigate and edit
+- Simpler to test individual components
+- Reduces merge conflicts
+- Encourages modular design
+
+**When approaching limits:**
+1. **Extract functions**: Break large functions into smaller, focused ones
+2. **Create modules**: Split large files into separate modules
+3. **Use composition**: Break large classes into smaller components
+4. **Refactor**: Look for repeated patterns that can be abstracted
+
+**Example refactoring:**
+```python
+# Bad: 80-line function
+def validate_all_references(config_path):
+    # ... 80 lines of validation logic
+
+# Good: Multiple focused functions
+def load_configuration(config_path):
+    # ... 10 lines
+
+def extract_entity_references(config):
+    # ... 15 lines
+
+def validate_references(entities, registry):
+    # ... 20 lines
+
+def validate_all_references(config_path):
+    config = load_configuration(config_path)
+    entities = extract_entity_references(config)
+    return validate_references(entities, registry)
+```
+
+**Enforcement:**
+Consider adding pre-commit hooks to check file sizes:
+```bash
+# In .git/hooks/pre-commit
+python -c "
+import sys
+for file in sys.argv[1:]:
+    lines = open(file).readlines()
+    if len(lines) > 500:
+        print(f'ERROR: {file} exceeds 500 lines ({len(lines)} lines)')
+        sys.exit(1)
+" $(git diff --cached --name-only --diff-filter=ACM | grep '\.py$')
+```
 
 ### Pre-commit Hooks
 

@@ -16,8 +16,13 @@ This file contains **Claude Code-specific guidance** for working on this project
 
 Use these slash commands for common workflows:
 
+### Getting Started
+- `/primer` - Comprehensive repository analysis to prime Claude on the codebase (recommended for new sessions)
+- `/tree` - Visualize repository structure
+
 ### AI-Powered Workflows (Agent System)
 - `/create-automation` - Guided automation creation with entity discovery, validation, and testing
+- `/create-automation-prp` - Advanced automation creation using PRP framework for complex automations (one-pass implementation)
 - `/find-entities` - Natural language entity search ("motion sensors in kitchen")
 - `/review-automations` - Comprehensive analysis of all automations
 - `/debug-automation` - Systematic debugging with specific fix suggestions
@@ -43,7 +48,10 @@ Simply type the slash command (e.g., `/validate-config`) to start the workflow.
 
 The most effective workflow for feature development:
 
+**Start of session**: Run `/primer` to establish comprehensive repository context (recommended for new Claude Code sessions)
+
 1. **Explore**: Research the codebase first
+   - Use `/tree` to visualize repository structure (if needed)
    - Use `/find-entities` to discover available devices
    - Read relevant configuration files
    - Check existing automations for patterns
@@ -70,6 +78,8 @@ The most effective workflow for feature development:
 **Example:**
 ```
 User: "Add automation to turn off all lights when I leave"
+
+START: /primer                  # Prime Claude on codebase (new session)
 
 1. EXPLORE:
    /find-entities person         # Find person/device_tracker entities
@@ -265,6 +275,190 @@ Good: Commit all related changes together
 ```
 
 **More Details**: See [config/CLAUDE.md](config/CLAUDE.md) for HA-specific multi-file patterns
+
+### Code Quality and Development Standards
+
+Maintain high code quality and consistency across the project with these standards.
+
+#### File Size Limits
+
+Keep files manageable and maintainable by following these limits:
+
+**Python Files:**
+- **Maximum file size**: 500 lines
+- **Maximum function size**: 50 lines
+- **Maximum class size**: 100 lines
+
+**YAML Files:**
+- **Automation files**: Keep individual automations under 100 lines
+- **Configuration files**: Break large configs into separate files using `!include`
+
+**Why:**
+- Easier to understand and review
+- Faster to navigate and edit
+- Simpler to test individual components
+- Reduces merge conflicts
+- Easier to refactor
+
+**Enforcement:**
+For Python tools, consider adding pre-commit hooks to check file sizes. See [tools/CLAUDE.md](tools/CLAUDE.md) for implementation guidance.
+
+#### Search and File Discovery
+
+**ALWAYS use ripgrep (`rg`) instead of `grep` or `find`** for better performance:
+
+**✅ Search with ripgrep:**
+```bash
+# Search for pattern in files
+rg "pattern" config/
+
+# Search with context (3 lines before/after)
+rg -C 3 "motion" config/automations.yaml
+
+# Search specific file types
+rg "climate" -t yaml
+
+# Find files by pattern
+rg --files -g "*.yaml" config/
+
+# Case-insensitive search
+rg -i "SENSOR" config/
+```
+
+**❌ Avoid grep and find:**
+```bash
+# Don't use grep
+grep -r "pattern" config/
+
+# Don't use find
+find config/ -name "*.yaml"
+```
+
+**Benefits of ripgrep:**
+- 10-100x faster than grep
+- Respects .gitignore by default
+- Better default output formatting
+- Built-in file type filtering
+- Unicode support
+
+**Note**: The Grep tool in Claude Code uses ripgrep internally, so prefer using that tool over manual bash commands.
+
+#### Conventional Commit Format
+
+Use conventional commit format for clear, searchable git history:
+
+**Format:**
+```
+<type>(<scope>): <subject>
+
+<optional body>
+
+<optional footer>
+```
+
+**Types:**
+- `feat` - New feature or automation
+- `fix` - Bug fix
+- `docs` - Documentation changes
+- `style` - Formatting, whitespace (no code change)
+- `refactor` - Code restructuring (no behavior change)
+- `test` - Adding or updating tests
+- `chore` - Maintenance tasks, dependencies
+
+**Scopes (examples for this project):**
+- `automation` - Automation changes
+- `validation` - Validator tool changes
+- `agent` - Agent system changes
+- `config` - Configuration file changes
+- `hook` - Hook changes
+- `docs` - Documentation updates
+
+**Examples:**
+```bash
+# New automation
+git commit -m "feat(automation): Add motion-based lighting for kitchen"
+
+# Bug fix in validator
+git commit -m "fix(validation): Handle missing entity gracefully in reference validator"
+
+# Documentation update
+git commit -m "docs(hooks): Add troubleshooting section for validation hooks"
+
+# Refactoring
+git commit -m "refactor(agent): Extract entity discovery logic to separate function"
+
+# Multiple files (use body for details)
+git commit -m "feat(automation): Add climate schedule with configurable settings
+
+- configuration.yaml: Added input_number helpers for temperature
+- scripts.yaml: Created reusable climate control script
+- automations.yaml: Added schedule-based automation
+
+These files must be deployed together."
+```
+
+**Benefits:**
+- Easy to scan git history for specific changes
+- Automated changelog generation possible
+- Clear understanding of change impact
+- Better collaboration in team environments
+
+**Current Practice**: You're already following this pattern informally. This formalizes it for consistency.
+
+#### Line Length
+
+**Maximum line length: 100 characters** (for all files)
+
+**Python:**
+- Enforced by Ruff formatter in tools/
+- Use black-compatible style
+
+**YAML:**
+- Break long lines with proper indentation
+- Use multi-line strings with `|` or `>` for long text
+
+**Markdown:**
+- Prefer breaking at sentence boundaries
+- Code blocks can exceed 100 characters if needed
+
+**Why 100 characters:**
+- Fits on modern displays without horizontal scrolling
+- Works well with side-by-side diffs
+- Compatible with GitHub code review interface
+- Balances readability with conciseness
+
+#### Naming Conventions Summary
+
+**Python (in tools/):**
+```python
+# Variables and functions: snake_case
+entity_id = "sensor.home_kitchen_motion"
+def validate_entity_reference():
+
+# Classes: PascalCase
+class EntityValidator:
+
+# Constants: UPPER_SNAKE_CASE
+MAX_FILE_SIZE = 500
+
+# Private members: _leading_underscore
+def _internal_helper():
+```
+
+**YAML (in config/):**
+```yaml
+# Entity IDs: domain.{scope}_{area}_{device}_{measurement}
+sensor.home_kitchen_motion
+light.office_bedroom_ceiling
+
+# Automation IDs: lowercase with underscores
+automation.kitchen_motion_lights
+
+# Helper entities: descriptive with underscores
+input_number.kitchen_light_brightness
+```
+
+**More Details**: See [config/CLAUDE.md](config/CLAUDE.md) for complete entity naming conventions.
 
 ### Instruction Specificity
 
