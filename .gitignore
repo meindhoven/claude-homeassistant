@@ -3,6 +3,7 @@
 # Claude Code personal configuration (not shared)
 .claude-local/
 CLAUDE.local.md
+.mcp.json
 .mcp.local.json
 
 # Secrets and sensitive data
