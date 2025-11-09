@@ -378,34 +378,50 @@ Simply type a slash command in Claude Code chat to start the workflow.
 
 See `CLAUDE.md` for complete workflow documentation.
 
-### MCP Server Integration (Optional)
+### MCP Server Integration (Optional but Recommended)
 
-Enable direct Home Assistant API access during Claude sessions:
+Enable direct Home Assistant API access during Claude sessions using **hass-mcp**.
 
+**Quick Setup:**
+```bash
+# 1. Copy the template
+cp .mcp.json.example .mcp.json
+
+# 2. Edit .mcp.json with your HA URL and long-lived access token
+# Replace: "http://your_homeassistant_host:8123"
+# Replace: "your_long_lived_access_token_here"
+
+# 3. Restart Claude Code
+```
+
+**Template (.mcp.json.example):**
 ```json
-// .mcp.json (disabled by default)
 {
   "mcpServers": {
-    "homeassistant-community": {
+    "homeassistant": {
       "command": "uvx",
-      "args": ["mcp-server-home-assistant", "-v"],
+      "args": ["hass-mcp"],
       "env": {
-        "HOME_ASSISTANT_WEB_SOCKET_URL": "${HA_URL}/api/websocket",
-        "HOME_ASSISTANT_API_TOKEN": "${HA_TOKEN}"
+        "HA_URL": "http://your_homeassistant_host:8123",
+        "HA_TOKEN": "your_long_lived_access_token_here"
       },
-      "disabled": false  // Change to enable
+      "disabled": false
     }
   }
 }
 ```
 
 **Benefits**:
-- Query entity states in real-time
-- Call HA services directly for testing
+- Query entity states in real-time (is sensor responding?)
+- Call HA services directly for testing automations
 - Validate entities against live instance
-- Debug automations with current state
+- Debug automations with current state ("why isn't this triggering?")
+- Check battery levels and sensor health
+- Verify entities are online before deploying
 
-See `CLAUDE.md` → "MCP Server Configuration" for setup instructions.
+**Security**: `.mcp.json` is in `.gitignore` and never committed.
+
+See `CLAUDE.md` → "MCP Server Configuration" for detailed setup instructions.
 
 ### Automated Validation Hooks
 

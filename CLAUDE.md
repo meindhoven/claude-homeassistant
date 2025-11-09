@@ -499,7 +499,9 @@ This project uses **hass-mcp** (`voska/hass-mcp`), a community MCP server implem
 
 ### Configuration
 
-The `.mcp.json` file in the project root contains the MCP server configuration:
+The MCP server configuration is stored in `.mcp.json` (not tracked in git for security).
+
+**Template file:** `.mcp.json.example` (committed to repository)
 
 ```json
 {
@@ -508,8 +510,8 @@ The `.mcp.json` file in the project root contains the MCP server configuration:
       "command": "uvx",
       "args": ["hass-mcp"],
       "env": {
-        "HA_URL": "${HA_URL}",
-        "HA_TOKEN": "${HA_TOKEN}"
+        "HA_URL": "http://your_homeassistant_host:8123",
+        "HA_TOKEN": "your_long_lived_access_token_here"
       },
       "disabled": false
     }
@@ -520,9 +522,13 @@ The `.mcp.json` file in the project root contains the MCP server configuration:
 **Configuration Details:**
 - `command: "uvx"` - Uses uvx to run the hass-mcp package (auto-installs if needed)
 - `args: ["hass-mcp"]` - The MCP server package name
-- `HA_URL` - Your Home Assistant URL (from `.env` file)
-- `HA_TOKEN` - Your Home Assistant long-lived access token (from `.env` file)
+- `HA_URL` - Your Home Assistant URL (replace with your actual URL)
+- `HA_TOKEN` - Your Home Assistant long-lived access token (replace with actual token)
 - `disabled: false` - MCP server is enabled by default
+
+**Security Note:**
+- `.mcp.json` is in `.gitignore` and will NOT be committed
+- This keeps your credentials secure and private
 
 ### Setup Instructions
 
@@ -538,24 +544,37 @@ The `.mcp.json` file in the project root contains the MCP server configuration:
    uvx --version
    ```
 
-2. **Configure Environment Variables:**
-   Ensure your `.env` file contains the required variables:
+2. **Create your MCP configuration:**
    ```bash
-   HA_TOKEN=your_home_assistant_long_lived_access_token
-   HA_URL=http://your_homeassistant_host:8123
+   # Copy the template
+   cp .mcp.json.example .mcp.json
    ```
 
-3. **Generate Long-Lived Access Token (if not done):**
+3. **Generate Long-Lived Access Token:**
    - Open Home Assistant web interface
    - Navigate to: Profile → Security (bottom left corner → your profile)
    - Scroll to "Long-Lived Access Tokens" section
    - Click "Create Token"
    - Give it a name (e.g., "Claude MCP")
    - Copy the token immediately (you can't view it again!)
-   - Add to `.env` file as `HA_TOKEN=<your_token>`
 
-4. **Verify Configuration:**
-   The MCP server is already configured and enabled in `.mcp.json`. No changes needed unless you want to disable it.
+4. **Edit .mcp.json with your credentials:**
+   ```bash
+   # Open .mcp.json in your editor
+   # Replace the following values:
+   ```
+
+   **Before:**
+   ```json
+   "HA_URL": "http://your_homeassistant_host:8123",
+   "HA_TOKEN": "your_long_lived_access_token_here"
+   ```
+
+   **After (example):**
+   ```json
+   "HA_URL": "http://homeassistant.local:8123",
+   "HA_TOKEN": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+   ```
 
 5. **Restart Claude Code:**
    Close and reopen Claude Code to load the MCP configuration.

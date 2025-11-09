@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "homeassistant": {
+      "command": "uvx",
+      "args": ["hass-mcp"],
+      "env": {
+        "HA_URL": "http://your_homeassistant_host:8123",
+        "HA_TOKEN": "your_long_lived_access_token_here"
+      },
+      "disabled": false
+    }
+  },
+  "_comment": "This is a template file. Copy to .mcp.json and update with your actual Home Assistant URL and token.",
+  "_instructions": [
+    "1. Copy this file: cp .mcp.json.example .mcp.json",
+    "2. Edit .mcp.json and replace 'your_homeassistant_host:8123' with your HA URL",
+    "3. Replace 'your_long_lived_access_token_here' with your actual HA token",
+    "4. Generate token: HA UI → Profile → Security → Long-Lived Access Tokens → Create Token",
+    "5. Install uvx: pip install uv (or use official installer)",
+    "6. Restart Claude Code to load the MCP server",
+    "Note: .mcp.json is in .gitignore and will not be committed"
+  ]
+}
