@@ -60,9 +60,34 @@
         "test_incrementally": true
       },
       "research": {
-        "use_entity_explorer_before_automations": true,
+        "use_entity_discovery_before_automations": true,
         "verify_entity_existence": true,
         "check_ha_docs_when_unsure": true
+      },
+      "mcp": {
+        "_comment": "MCP (Model Context Protocol) provides live Home Assistant API access via hass-mcp",
+        "when_to_use_mcp": [
+          "Checking current entity states (is sensor responding?)",
+          "Debugging automations (why isn't it triggering?)",
+          "Testing if entities are available before deployment",
+          "Verifying battery levels and sensor health",
+          "Calling services to test automation actions",
+          "Getting real-time attribute values (temperature, brightness, etc.)"
+        ],
+        "when_to_use_files": [
+          "Discovering all available entities (entity registry)",
+          "Checking entity metadata (area, device_class, platform)",
+          "Finding disabled entities",
+          "Understanding entity relationships"
+        ],
+        "best_practice": "Use BOTH - files for discovery, MCP for live state verification",
+        "mcp_tools_available": {
+          "homeassistant_get_states": "Get current state of entities",
+          "homeassistant_call_service": "Call HA services (turn_on, turn_off, etc.)",
+          "homeassistant_get_services": "List available services",
+          "homeassistant_get_config": "Get HA configuration",
+          "homeassistant_get_events": "Get event history"
+        }
       }
     }
   },
