@@ -7,7 +7,32 @@ Perform a comprehensive analysis of this Home Assistant configuration repository
 ## Analysis Workflow
 
 ### 1. Structure Overview
-Run `tree -L 2 -I 'venv|__pycache__|.git'` to visualize the project organization.
+
+Visualize the project organization using one of these approaches:
+
+**Option A: If tree is installed**
+```bash
+tree -L 2 -I 'venv|__pycache__|.git'
+```
+
+**Option B: Alternative using find (if tree not available)**
+```bash
+find . -maxdepth 2 -not -path '*/venv/*' -not -path '*/__pycache__/*' -not -path '*/.git/*' | sort
+```
+
+**Option C: Manual structure overview**
+```
+.
+├── .claude/          # Claude Code settings, commands, hooks
+├── agents/           # Multi-agent automation system
+├── config/           # Home Assistant configuration
+├── docs/             # Documentation
+├── tests/            # Test suite
+├── tools/            # Validation scripts
+├── CLAUDE.md         # Claude Code guidance
+├── README.md         # Project overview
+└── Makefile          # Build commands
+```
 
 Identify:
 - Top-level directories and their purposes
